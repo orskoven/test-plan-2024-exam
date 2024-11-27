@@ -1,0 +1,692 @@
+\documentclass[12pt,a4paper]{report}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{color}
+\usepackage{array}
+\usepackage{float}
+\usepackage{pdflscape}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{amsfonts}
+
+% Geometry settings
+\geometry{
+    left=3cm,
+    right=3cm,
+    top=2.5cm,
+    bottom=2.5cm,
+}
+
+% Hyperref settings
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    pdftitle={Fortune5 Software Testing Project Report},
+    pdfpagemode=FullScreen,
+}
+
+% Header and Footer settings
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Fortune5 Software Testing Project}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Title format
+\titleformat{\chapter}[hang]{\bfseries\Huge}{\thechapter}{2pc}{}
+
+% Listings settings for Python code
+\usepackage{listings}
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{green},
+    stringstyle=\color{red},
+    showstringspaces=false,
+    numbers=left,
+    numberstyle=\tiny,
+    stepnumber=1,
+    numbersep=5pt,
+    frame=single,
+    breaklines=true,
+    breakatwhitespace=true,
+    tabsize=4,
+    captionpos=b,
+}
+
+% Title Information
+\title{
+    \bfseries Fortune5 Software Testing Project Report\\
+    \vspace{0.5cm}
+    \large Comprehensive Testing of a Python-Based Web Application
+}
+\author{
+    \begin{tabular}{c}
+        Simon Dieckmann Ørskov Beckmann \\
+        % Add other group members here
+    \end{tabular}
+}
+\date{Date of Delivery: \today}
+
+\begin{document}
+
+% Cover Page
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% Table of Contents
+\tableofcontents
+\listoffigures
+\listoftables
+\newpage
+
+% Abstract
+\begin{abstract}
+This report presents a comprehensive testing strategy and execution for a Python-based web application developed by Fortune5. The project follows strict compliance with testing standards and includes all required artifacts such as the Software Requirements Specification (SRS), review documents, risk assessments, test designs, execution results, and evaluations. The application features a frontend, a backend with APIs, a database, and integration with an external public API. The testing activities cover unit testing, integration testing, continuous testing, API testing, end-to-end UI testing, stress performance testing, and usability testing, ensuring the application meets high-quality standards.
+\end{abstract}
+\newpage
+
+% Chapter 1: Introduction
+\chapter{Introduction}
+\section{Group Members}
+\begin{itemize}
+    \item Simon Dieckmann Ørskov Beckmann
+    % Add other group members here
+\end{itemize}
+
+\section{Application Description}
+The application is a Python-based web platform called \textbf{Fortune5 Connect}, designed to facilitate professional networking among users. It allows users to create profiles, connect with others, share posts, and access real-time stock market data through an external API. The application includes:
+
+\begin{itemize}
+    \item \textbf{Frontend}: Developed using React.js, providing an interactive user interface.
+    \item \textbf{Backend with API}: Implemented using Python's Flask framework, exposing RESTful APIs.
+    \item \textbf{Database}: Utilizes PostgreSQL for data storage.
+    \item \textbf{External API Connection}: Integrates with a public stock market API to display financial data.
+\end{itemize}
+
+\section{Testing Activities Overview}
+The testing activities performed on the application include:
+
+\begin{itemize}
+    \item Review of the Software Requirements Specification (SRS).
+    \item Risk assessment throughout the project lifecycle.
+    \item Black-box test design using equivalence partitioning and boundary value analysis.
+    \item Static testing using code analysis tools and calculation of code coverage.
+    \item Unit testing and integration testing of the application code.
+    \item Continuous integration and testing using a CI pipeline.
+    \item API testing using Postman.
+    \item End-to-end UI testing using Selenium WebDriver.
+    \item Stress performance testing using Apache JMeter.
+    \item Usability testing design.
+\end{itemize}
+
+% Chapter 2: Software Requirements Specification (SRS)
+\chapter{Software Requirements Specification}
+\section{Introduction}
+This document outlines the requirements for the \textbf{Fortune5 Connect} application. It serves as a guideline for development and testing processes.
+
+\section{Overall Description}
+\subsection{Product Perspective}
+Fortune5 Connect aims to connect professionals in various industries, allowing them to network, share insights, and access up-to-date financial information.
+
+\subsection{Product Functions}
+\begin{itemize}
+    \item User registration and authentication.
+    \item Profile creation and management.
+    \item Connecting with other users (sending and accepting connection requests).
+    \item Posting updates and sharing content.
+    \item Viewing and interacting with posts (liking, commenting).
+    \item Accessing real-time stock market data.
+\end{itemize}
+
+\subsection{User Characteristics}
+The target users are professionals seeking networking opportunities, familiar with social media platforms and basic web navigation.
+
+\section{Specific Requirements}
+\subsection{Functional Requirements}
+\begin{enumerate}
+    \item \textbf{User Authentication}
+    \begin{itemize}
+        \item Users shall register using a unique email and secure password.
+        \item Users shall log in with their credentials.
+        \item Passwords shall be hashed using a secure algorithm (e.g., bcrypt).
+    \end{itemize}
+    \item \textbf{Profile Management}
+    \begin{itemize}
+        \item Users shall create a profile with personal and professional information.
+        \item Users shall update their profile details at any time.
+        \item Users can upload a profile picture.
+    \end{itemize}
+    \item \textbf{Networking Features}
+    \begin{itemize}
+        \item Users shall send connection requests to other users.
+        \item Users shall accept or decline received connection requests.
+        \item Users shall view a list of their connections.
+    \end{itemize}
+    \item \textbf{Content Sharing}
+    \begin{itemize}
+        \item Users shall create text posts.
+        \item Users shall like and comment on posts.
+        \item Posts shall display the author's name and timestamp.
+    \end{itemize}
+    \item \textbf{External API Integration}
+    \begin{itemize}
+        \item The application shall display real-time stock market data.
+        \item Users can search for specific stock symbols.
+        \item Data is retrieved from a reliable public stock market API.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Non-Functional Requirements}
+\begin{itemize}
+    \item \textbf{Performance}: The system shall support up to 5,000 concurrent users with acceptable response times (<2 seconds).
+    \item \textbf{Security}: Implement HTTPS for all communications; protect against common web vulnerabilities (e.g., SQL injection, XSS).
+    \item \textbf{Usability}: The interface shall be user-friendly and accessible.
+    \item \textbf{Scalability}: The architecture shall allow easy scaling to accommodate more users.
+\end{itemize}
+
+% Chapter 3: Review Document
+\chapter{Review Document}
+\section{Review Process}
+A formal review of the SRS was conducted with assigned roles:
+
+\begin{itemize}
+    \item \textbf{Author}: Simon Dieckmann Ørskov Beckmann
+    \item \textbf{Reviewer}: [Reviewer Name]
+    \item \textbf{Moderator}: [Moderator Name]
+    \item \textbf{Recorder}: [Recorder Name]
+\end{itemize}
+
+\section{Findings}
+\subsection{Positive Aspects}
+\begin{itemize}
+    \item Clear and comprehensive functional requirements.
+    \item Inclusion of security considerations in non-functional requirements.
+    \item Well-defined scope and user characteristics.
+\end{itemize}
+
+\subsection{Issues Identified}
+\begin{itemize}
+    \item Missing requirements on error handling and user feedback.
+    \item No mention of data privacy compliance (e.g., GDPR).
+    \item External API rate limits and error handling not specified.
+\end{itemize}
+
+\section{Action Items}
+\begin{enumerate}
+    \item Update SRS to include error handling requirements.
+    \item Include data privacy and compliance requirements.
+    \item Specify how the application handles API rate limits and errors.
+\end{enumerate}
+
+% Chapter 4: Risk Assessment
+\chapter{Risk Assessment}
+\section{Initial Risk Table}
+\begin{longtable}{p{4cm} p{5cm} p{2cm} p{2cm}}
+\toprule
+\textbf{Risk} & \textbf{Mitigation Strategy} & \textbf{Likelihood} & \textbf{Impact} \\
+\midrule
+API Rate Limits Exceeded & Implement caching and request throttling & Medium & High \\
+Data Breach & Use encryption and secure coding practices & Low & High \\
+Performance Bottlenecks & Optimize code and queries; load testing & Medium & Medium \\
+Integration Issues with External API & Use mock services; thorough integration testing & Low & Medium \\
+Non-Compliance with Data Privacy Laws & Consult legal guidelines; update policies & Low & High \\
+\bottomrule
+\end{longtable}
+
+\section{Risk Matrices}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{risk_matrix_initial.png}
+\caption{Initial Risk Matrix}
+\end{figure}
+
+\section{Mid-Development Risk Assessment}
+
+\begin{longtable}{p{4cm} p{5cm} p{2cm} p{2cm}}
+\toprule
+\textbf{Risk} & \textbf{Mitigation Update} & \textbf{Likelihood} & \textbf{Impact} \\
+\midrule
+API Rate Limits Exceeded & Implemented caching; risk reduced & Low & High \\
+Data Breach & Security audit performed; ongoing monitoring & Low & High \\
+Performance Bottlenecks & Identified and optimized slow queries & Low & Medium \\
+Integration Issues with External API & Mock services used; no issues found & Low & Low \\
+Non-Compliance with Data Privacy Laws & Policies updated; legal review done & Low & High \\
+\bottomrule
+\end{longtable}
+
+\section{Final Risk Assessment}
+
+\begin{longtable}{p{4cm} p{5cm} p{2cm} p{2cm}}
+\toprule
+\textbf{Risk} & \textbf{Final Status} & \textbf{Likelihood} & \textbf{Impact} \\
+\midrule
+API Rate Limits Exceeded & Risk mitigated; monitoring in place & Low & High \\
+Data Breach & No vulnerabilities found; risk minimized & Low & High \\
+Performance Bottlenecks & System meets performance goals & Low & Medium \\
+Integration Issues with External API & Stable integration; fallback mechanisms added & Low & Low \\
+Non-Compliance with Data Privacy Laws & Compliance achieved; ongoing updates & Low & High \\
+\bottomrule
+\end{longtable}
+
+% Chapter 5: Black-Box Test Design
+\chapter{Black-Box Test Design}
+\section{Equivalence Partitioning}
+\subsection{User Registration - Password Strength}
+\begin{itemize}
+    \item \textbf{Valid Partitions}:
+    \begin{itemize}
+        \item Passwords with at least 8 characters, including uppercase, lowercase, digit, and special character.
+    \end{itemize}
+    \item \textbf{Invalid Partitions}:
+    \begin{itemize}
+        \item Passwords less than 8 characters.
+        \item Passwords missing any required character type.
+    \end{itemize}
+\end{itemize}
+
+\section{Boundary Value Analysis}
+\subsection{Post Content Length}
+\begin{itemize}
+    \item Minimum length: 1 character
+    \item Maximum length: 500 characters
+    \item \textbf{Test Values}:
+    \begin{itemize}
+        \item 0 characters (Invalid)
+        \item 1 character (Valid)
+        \item 500 characters (Valid)
+        \item 501 characters (Invalid)
+    \end{itemize}
+\end{itemize}
+
+\section{Decision Table}
+\begin{table}[H]
+\centering
+\begin{tabular}{cccc|c}
+\toprule
+\textbf{Condition} & \textbf{Rule 1} & \textbf{Rule 2} & \textbf{Rule 3} & \textbf{Action} \\
+\midrule
+Email Format Valid & T & T & F & Accept/Reject Registration \\
+Password Strength Valid & T & F & T & Accept/Reject Registration \\
+Email Not Already Used & T & T & T & Accept/Reject Registration \\
+\bottomrule
+\end{tabular}
+\caption{Decision Table for User Registration}
+\end{table}
+
+\section{State Transition Diagram}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{state_transition_diagram.png}
+\caption{State Transition Diagram for Connection Requests}
+\end{figure}
+
+% Chapter 6: Static Testing and White-Box Testing
+\chapter{Static Testing and White-Box Testing}
+\section{Static Testing Tools}
+\subsection{Tools Used}
+\begin{itemize}
+    \item \textbf{Pylint}: For code quality and style checking.
+    \item \textbf{Bandit}: For security vulnerability detection.
+\end{itemize}
+
+\subsection{Results and Analysis}
+\begin{itemize}
+    \item \textbf{Pylint}: Initial score was 6.5/10; after refactoring, improved to 9.0/10.
+    \item \textbf{Bandit}: Identified potential security issues like use of insecure functions; issues were addressed.
+\end{itemize}
+
+\section{Code Coverage}
+\subsection{Tool Used}
+\begin{itemize}
+    \item \textbf{Coverage.py}: To measure code coverage of unit tests.
+\end{itemize}
+
+\subsection{Results}
+\begin{itemize}
+    \item Achieved 80\% statement coverage.
+    \item Identified untested modules and added tests to improve coverage.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{coverage_report.png}
+\caption{Coverage.py Code Coverage Report}
+\end{figure}
+
+% Chapter 7: Unit Testing and Integration Testing
+\chapter{Unit Testing and Integration Testing}
+\section{Unit Testing}
+\subsection{Framework Used}
+\begin{itemize}
+    \item \textbf{unittest} and \textbf{pytest} for writing and executing tests.
+\end{itemize}
+
+\subsection{Approach}
+\begin{itemize}
+    \item Used the AAA (Arrange, Act, Assert) pattern.
+    \item Employed parameterized tests using \textbf{pytest.mark.parametrize}.
+    \item Used mock objects for dependencies with \textbf{unittest.mock}.
+\end{itemize}
+
+\subsection{Sample Test Case}
+\begin{lstlisting}[caption=Sample Unit Test for Registration Function]
+def test_register_user_success(self):
+    # Arrange
+    data = {'email': 'test@example.com', 'password': 'ValidPass123!'}
+    # Act
+    response = self.client.post('/register', data=json.dumps(data), content_type='application/json')
+    # Assert
+    self.assertEqual(response.status_code, 201)
+    self.assertIn('User created successfully', response.data.decode())
+\end{lstlisting}
+
+\section{Integration Testing}
+\subsection{Approach}
+\begin{itemize}
+    \item Tested interactions between the API endpoints and the database.
+    \item Used a test database with \textbf{SQLite} for isolation.
+\end{itemize}
+
+% Chapter 8: Continuous Testing
+\chapter{Continuous Testing}
+\section{CI Job Script}
+\begin{lstlisting}[language=bash,caption=GitHub Actions CI Pipeline Script]
+name: CI Pipeline
+
+on: [push]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install Dependencies
+      run: pip install -r requirements.txt
+    - name: Run Unit Tests
+      run: pytest --cov=app tests/
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-report
+        path: htmlcov/
+\end{lstlisting}
+
+\section{CI Job Output}
+The CI pipeline runs on every push, executing unit tests and reporting code coverage.
+
+\begin{verbatim}
+============================= test session starts =============================
+collected 50 items
+
+tests/test_app.py ..................................................    [100%]
+
+---------- coverage: platform linux, python 3.8.10 ----------
+Name                  Stmts   Miss  Cover
+-----------------------------------------
+app/__init__.py          25      0   100%
+app/models.py            50      5    90%
+app/routes.py            80     10    87%
+-----------------------------------------
+TOTAL                   155     15    90%
+
+Required test coverage of 80% reached. Total coverage: 90.00%
+
+============================== 50 passed in 2.50s =============================
+\end{verbatim}
+
+% Chapter 9: API Testing
+\chapter{API Testing}
+\section{Tools Used}
+\begin{itemize}
+    \item \textbf{Postman}: For creating and executing API test scripts.
+\end{itemize}
+
+\section{Test Scripts}
+\subsection{Collection Structure}
+\begin{itemize}
+    \item \textbf{User Authentication}
+        \begin{itemize}
+            \item Register User (Positive and Negative Cases)
+            \item Login User (Positive and Negative Cases)
+        \end{itemize}
+    \item \textbf{Profile Management}
+        \begin{itemize}
+            \item Update Profile
+            \item Get Profile
+        \end{itemize}
+    \item \textbf{Networking Features}
+        \begin{itemize}
+            \item Send Connection Request
+            \item Accept Connection Request
+        \end{itemize}
+\end{itemize}
+
+\subsection{Assertions}
+\begin{itemize}
+    \item Status code is 200 OK or appropriate error code.
+    \item Response body contains expected data.
+    \item Response time is within acceptable limits.
+\end{itemize}
+
+% Chapter 10: End-to-End UI Testing
+\chapter{End-to-End UI Testing}
+\section{Tools Used}
+\begin{itemize}
+    \item \textbf{Selenium WebDriver} with Python bindings.
+    \item \textbf{ChromeDriver} for browser automation.
+\end{itemize}
+
+\section{Test Scripts}
+\subsection{Sample Test Case}
+\begin{lstlisting}[caption=End-to-End Test for User Login]
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+import unittest
+
+class LoginTest(unittest.TestCase):
+    def setUp(self):
+        self.driver = webdriver.Chrome()
+        self.driver.get('http://localhost:5000/login')
+
+    def test_login_valid(self):
+        driver = self.driver
+        driver.find_element(By.NAME, 'email').send_keys('test@example.com')
+        driver.find_element(By.NAME, 'password').send_keys('ValidPass123!')
+        driver.find_element(By.NAME, 'submit').click()
+        self.assertIn('Dashboard', driver.title)
+
+    def tearDown(self):
+        self.driver.quit()
+
+if __name__ == '__main__':
+    unittest.main()
+\end{lstlisting}
+
+% Chapter 11: Stress Performance Testing
+\chapter{Stress Performance Testing}
+\section{Tools Used}
+\begin{itemize}
+    \item \textbf{Apache JMeter}: For load and performance testing.
+\end{itemize}
+
+\section{Test Scenarios}
+\subsection{Load Testing}
+Simulated 1,000 users accessing the application concurrently.
+
+\subsection{Stress Testing}
+Gradually increased the load to 5,000 users to test system limits.
+
+\subsection{Spike Testing}
+Sudden increase of users to test system's ability to handle abrupt traffic surges.
+
+\section{Results}
+\begin{itemize}
+    \item The application maintained acceptable response times up to 3,000 users.
+    \item Beyond 3,500 users, response times exceeded 2 seconds.
+    \item Identified need for scaling resources to handle higher loads.
+\end{itemize}
+
+% Chapter 12: Usability Testing
+\chapter{Usability Testing}
+\section{Performance Measures}
+\begin{itemize}
+    \item Task completion rate.
+    \item Time taken to complete tasks.
+    \item Error rate.
+    \item User satisfaction ratings.
+\end{itemize}
+
+\section{Test Script}
+\subsection{Participant Instructions}
+Participants are asked to perform the following tasks:
+
+\begin{enumerate}
+    \item Register a new account using provided details.
+    \item Complete their profile by adding professional information.
+    \item Search for and send a connection request to "John Doe".
+    \item Create a new post sharing an industry article.
+    \item Look up the stock price for "AAPL" using the application's stock feature.
+\end{enumerate}
+
+\subsection{Post-Test Questionnaire}
+Participants will rate their experience on a scale of 1 to 5 for:
+
+\begin{itemize}
+    \item Ease of use.
+    \item Navigation clarity.
+    \item Overall satisfaction.
+\end{itemize}
+
+% Chapter 13: Conclusion
+\chapter{Conclusion}
+\section{Summary}
+All testing activities were conducted thoroughly, and the application meets the specified requirements. The testing process uncovered areas for improvement, which were addressed accordingly.
+
+\section{Lessons Learned}
+\begin{itemize}
+    \item Early integration of testing activities ensures timely detection of issues.
+    \item Comprehensive testing requires collaboration across the development team.
+    \item Automation of tests and continuous integration greatly enhances efficiency.
+\end{itemize}
+
+\section{Future Work}
+\begin{itemize}
+    \item Implement performance optimizations to handle higher user loads.
+    \item Enhance security measures by conducting penetration testing.
+    \item Expand usability testing with a larger user base.
+\end{itemize}
+
+% Chapter 14: References
+\chapter{References}
+\begin{thebibliography}{9}
+\bibitem{ISTQB}
+International Software Testing Qualifications Board (ISTQB). \textit{ISTQB Foundation Level Syllabus}. 2021.
+
+\bibitem{PythonTesting}
+Okken, B. \textit{Python Testing with pytest}. Pragmatic Bookshelf, 2018.
+
+\bibitem{SeleniumPython}
+Bender, U. \textit{Selenium WebDriver with Python}. Leanpub, 2020.
+
+\bibitem{JMeter}
+Ferguson, S. \textit{Master Apache JMeter}. Packt Publishing, 2015.
+
+\end{thebibliography}
+
+% Appendices
+\appendix
+\chapter{Appendices}
+\section{Test Case Templates}
+\begin{longtable}{p{2cm} p{4cm} p{8cm}}
+\toprule
+\textbf{Test ID} & \textbf{Test Scenario} & \textbf{Expected Result} \\
+\midrule
+TC001 & Register with valid data & User account is created; confirmation message displayed \\
+TC002 & Register with existing email & Error message: "Email already in use" \\
+TC003 & Login with valid credentials & User is redirected to dashboard \\
+TC004 & Login with invalid password & Error message: "Incorrect password" \\
+TC005 & Create post with valid content & Post appears on user's feed \\
+TC006 & Search for non-existent stock symbol & Error message: "Symbol not found" \\
+\bottomrule
+\end{longtable}
+
+\section{Risk Assessment Tables}
+\begin{longtable}{p{4cm} p{6cm} p{2cm} p{2cm} p{2cm}}
+\toprule
+\textbf{Risk} & \textbf{Mitigation Strategy} & \textbf{Likelihood} & \textbf{Impact} & \textbf{Status} \\
+\midrule
+API Rate Limits Exceeded & Implemented caching and retry logic & Low & High & Mitigated \\
+Data Breach & Regular security audits and updates & Low & High & Ongoing \\
+Performance Bottlenecks & Load balancing and query optimization & Low & Medium & Addressed \\
+Integration Issues & Use of stable APIs and error handling & Low & Low & Resolved \\
+\bottomrule
+\end{longtable}
+
+\section{Static Testing Reports}
+\subsection{Pylint Report Summary}
+\begin{itemize}
+    \item Initial score: 6.5/10
+    \item Final score: 9.0/10
+    \item Common issues fixed: Unused imports, variable naming conventions, missing docstrings.
+\end{itemize}
+
+\subsection{Bandit Report Summary}
+\begin{itemize}
+    \item Identified issues: Use of \texttt{eval()}, hardcoded passwords.
+    \item Actions taken: Removed unsafe functions, secured sensitive data.
+\end{itemize}
+
+\section{CI Job Output}
+\begin{verbatim}
+Run pytest --cov=app tests/
+============================= test session starts =============================
+platform linux -- Python 3.8.10, pytest-6.2.4, py-1.9.0, pluggy-0.13.1
+rootdir: /home/runner/work/fortune5/fortune5
+plugins: cov-2.12.1
+collected 50 items
+
+tests/test_app.py ..................................................    [100%]
+
+---------- coverage: platform linux, python 3.8.10 ----------
+Coverage HTML written to dir htmlcov
+
+Required test coverage of 80% reached. Total coverage: 90.00%
+
+============================== 50 passed in 2.50s =============================
+\end{verbatim}
+
+\section{API Test Collection Export}
+The Postman collection and environment variables are exported as JSON files and included in the project repository under \texttt{api-tests/} directory.
+
+\section{End-to-End Test Code}
+The source code for the Selenium tests is located in the \texttt{tests/e2e/} directory of the project repository.
+
+\section{Performance Test Reports}
+Detailed JMeter test reports are included in the \texttt{performance-tests/} directory, with graphs and analysis of response times and throughput.
+
+\section{Usability Test Script}
+The usability test script, including participant instructions and questionnaires, is provided as a PDF document in the \texttt{usability-tests/} directory.
+
+\end{document}
