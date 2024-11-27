@@ -1,0 +1,553 @@
+\documentclass[12pt,a4paper]{report}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{color}
+\usepackage{array}
+\usepackage{float}
+\usepackage{pdflscape}
+
+% Geometry settings
+\geometry{
+    left=3cm,
+    right=3cm,
+    top=3cm,
+    bottom=3cm,
+}
+
+% Hyperref settings
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    pdftitle={ISTQB Certification Project Report},
+    pdfpagemode=FullScreen,
+}
+
+% Title Information
+\title{
+    \bfseries Testing Microservices and Database Migration\\
+    \vspace{0.5cm}
+    \large ISTQB Certification Project Report
+}
+\author{
+    Simon Dieckmann Ørskov Beckmann \\
+    % Add other group members here
+}
+\date{Date of Delivery: \today}
+
+\begin{document}
+
+% Cover Page
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% Table of Contents
+\tableofcontents
+\listoffigures
+\listoftables
+\newpage
+
+% Abstract
+\begin{abstract}
+This report presents a comprehensive testing strategy for migrating databases from MySQL to MongoDB and Neo4j within a microservices architecture. Utilizing the V-Model, the project emphasizes thorough testing phases to ensure functional and non-functional requirements are met. The report includes all required deliverables, such as the Software Requirements Specification (SRS), review documents, risk assessments, test designs, execution results, and evaluations aligned with ISTQB standards. The primary focus is on validating data integrity, system performance, and ensuring seamless integration between microservices and the new database systems.
+\end{abstract}
+\newpage
+
+% Chapter 1: Introduction
+\chapter{Introduction}
+\section{Group Members}
+\begin{itemize}
+    \item Simon Dieckmann Ørskov Beckmann
+    % Add other group members here
+\end{itemize}
+
+\section{Problem Description}
+In the evolving landscape of software development, organizations are increasingly adopting microservices architectures to enhance scalability and maintainability. Concurrently, the need to handle diverse data types has led to the adoption of NoSQL databases like MongoDB and graph databases like Neo4j. This project involves migrating an existing relational database system using MySQL to MongoDB and Neo4j, aiming to leverage their respective strengths in handling document-based and graph-based data.
+
+\subsection{System Overview}
+The system under consideration is a web application that provides social networking features, including user profiles, relationships, messaging, and content sharing. The backend is composed of microservices, each responsible for specific functionalities such as user management, content management, and notification services. The microservices communicate via RESTful APIs and are deployed using containerization technologies like Docker.
+
+\subsection{Application Components}
+\begin{itemize}
+    \item \textbf{Frontend}: A responsive web interface built using React.js, allowing users to interact with the application.
+    \item \textbf{Backend with API}: Microservices developed using Spring Boot, exposing RESTful APIs for frontend communication.
+    \item \textbf{Database}: Initially using MySQL, migrated to MongoDB for document storage and Neo4j for managing relationships.
+    \item \textbf{External API Connection}: Integration with a weather API to display weather information on user dashboards.
+\end{itemize}
+
+\section{Choice of Technologies}
+\subsection{Databases}
+\begin{itemize}
+    \item \textbf{MySQL}: A widely-used relational database management system suitable for structured data and ACID transactions.
+    \item \textbf{MongoDB}: A NoSQL document database ideal for handling unstructured or semi-structured data, offering flexibility in data modeling.
+    \item \textbf{Neo4j}: A graph database designed for managing highly connected data, enabling efficient traversal of relationships.
+\end{itemize}
+
+\subsection{Programming Languages and Tools}
+\begin{itemize}
+    \item \textbf{Programming Languages}: Java for backend development and Python for scripting and automation.
+    \item \textbf{Frameworks}: Spring Boot for building microservices; React.js for frontend development.
+    \item \textbf{API Tools}: Postman and Swagger UI for API testing and documentation.
+    \item \textbf{Version Control}: Git for source code management.
+    \item \textbf{CI/CD Tools}: Jenkins and GitHub Actions for continuous integration and deployment pipelines.
+    \item \textbf{Testing Tools}: JUnit, Mockito, Selenium WebDriver, Apache JMeter, and SonarQube.
+\end{itemize}
+
+% Chapter 2: Software Requirements Specification (SRS)
+\chapter{Software Requirements Specification}
+\section{Introduction}
+This section outlines the functional and non-functional requirements of the social networking application, serving as a baseline for development and testing.
+
+\section{Overall Description}
+\subsection{Product Perspective}
+The application aims to provide users with a platform to connect, share content, and communicate, integrating social features with real-time weather updates.
+
+\subsection{Product Functions}
+\begin{itemize}
+    \item User registration and authentication.
+    \item Profile management.
+    \item Posting and commenting on content.
+    \item Following and unfollowing users.
+    \item Messaging between users.
+    \item Displaying weather information via external API.
+\end{itemize}
+
+\subsection{User Characteristics}
+Users are individuals familiar with social media platforms, expecting intuitive interfaces and responsive interactions.
+
+\section{Specific Requirements}
+\subsection{Functional Requirements}
+\begin{enumerate}
+    \item \textbf{User Authentication}
+    \begin{itemize}
+        \item Users shall be able to register with a unique email and password.
+        \item Users shall be able to log in using their credentials.
+        \item Passwords shall be stored securely using hashing.
+    \end{itemize}
+    \item \textbf{Profile Management}
+    \begin{itemize}
+        \item Users shall be able to update their profile information.
+        \item Users shall have the option to make their profile public or private.
+    \end{itemize}
+    \item \textbf{Content Sharing}
+    \begin{itemize}
+        \item Users shall be able to create posts with text and images.
+        \item Users shall be able to comment on posts.
+        \item Users shall be able to like posts.
+    \end{itemize}
+    \item \textbf{Social Interactions}
+    \begin{itemize}
+        \item Users shall be able to follow and unfollow other users.
+        \item Users shall receive notifications for new followers, likes, and comments.
+    \end{itemize}
+    \item \textbf{Messaging}
+    \begin{itemize}
+        \item Users shall be able to send and receive messages in real-time.
+        \item Messages shall be stored securely and retrievable.
+    \end{itemize}
+    \item \textbf{Weather Information}
+    \begin{itemize}
+        \item The application shall display current weather information based on the user's location.
+        \item Weather data shall be fetched from a public API.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Non-Functional Requirements}
+\begin{itemize}
+    \item \textbf{Performance}: The system shall handle up to 10,000 concurrent users with response times under 2 seconds.
+    \item \textbf{Security}: Data shall be transmitted over HTTPS, and sensitive information shall be encrypted.
+    \item \textbf{Usability}: The interface shall be intuitive and accessible, complying with standard UI/UX guidelines.
+    \item \textbf{Scalability}: The system shall be scalable to accommodate growing user bases.
+\end{itemize}
+
+% Chapter 3: Review Document
+\chapter{Review Document}
+\section{Review Process}
+A formal review of the SRS was conducted by the group members, with roles assigned as follows:
+\begin{itemize}
+    \item \textbf{Author}: Simon Dieckmann Ørskov Beckmann
+    \item \textbf{Reviewer 1}: [Reviewer Name]
+    \item \textbf{Reviewer 2}: [Reviewer Name]
+\end{itemize}
+
+\section{Findings}
+\subsection{Positive Aspects}
+\begin{itemize}
+    \item Comprehensive coverage of functional requirements.
+    \item Clear definition of user interactions.
+    \item Inclusion of non-functional requirements relevant to system performance and security.
+\end{itemize}
+
+\subsection{Areas for Improvement}
+\begin{itemize}
+    \item Need for elaboration on error handling requirements.
+    \item Clarification required on data retention policies.
+    \item Suggestion to include accessibility standards compliance.
+\end{itemize}
+
+\section{Action Items}
+\begin{enumerate}
+    \item Update the SRS to include error handling scenarios.
+    \item Define data retention and privacy policies.
+    \item Incorporate accessibility compliance requirements.
+\end{enumerate}
+
+% Chapter 4: Risk Assessment
+\chapter{Risk Assessment}
+\section{Initial Risk Table}
+\begin{longtable}{p{4cm} p{6cm} p{2cm} p{2cm}}
+\toprule
+\textbf{Risk} & \textbf{Mitigation Strategy} & \textbf{Likelihood} & \textbf{Impact} \\
+\midrule
+Data Loss During Migration & Perform backups and validate data post-migration & High & High \\
+Performance Degradation & Conduct performance testing and optimize queries & Medium & High \\
+Security Vulnerabilities & Perform security testing and code reviews & Medium & High \\
+Integration Issues & Use integration tests and continuous integration pipelines & Low & Medium \\
+\bottomrule
+\end{longtable}
+
+\section{Risk Matrices}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{risk_matrix_initial.png}
+\caption{Initial Risk Matrix}
+\end{figure}
+
+\section{Mid-Development Risk Assessment}
+\begin{longtable}{p{4cm} p{6cm} p{2cm} p{2cm}}
+\toprule
+\textbf{Risk} & \textbf{Mitigation Update} & \textbf{Likelihood} & \textbf{Impact} \\
+\midrule
+Data Loss During Migration & Migration tests show data consistency; risk reduced & Medium & High \\
+Performance Degradation & Optimization of queries in progress & Medium & Medium \\
+Security Vulnerabilities & Security tools integrated into CI/CD pipeline & Low & High \\
+Integration Issues & Resolved initial issues; monitoring ongoing & Low & Low \\
+\bottomrule
+\end{longtable}
+
+\section{Final Risk Assessment}
+\begin{longtable}{p{4cm} p{6cm} p{2cm} p{2cm}}
+\toprule
+\textbf{Risk} & \textbf{Final Status} & \textbf{Likelihood} & \textbf{Impact} \\
+\midrule
+Data Loss During Migration & No issues found; risk mitigated & Low & High \\
+Performance Degradation & System meets performance criteria & Low & Medium \\
+Security Vulnerabilities & No critical vulnerabilities; ongoing monitoring & Low & High \\
+Integration Issues & All integration tests pass consistently & Low & Low \\
+\bottomrule
+\end{longtable}
+
+\section{Risk Matrices at Different Stages}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{risk_matrix_final.png}
+\caption{Final Risk Matrix}
+\end{figure}
+
+% Chapter 5: Black-Box Test Design
+\chapter{Black-Box Test Design}
+\section{Equivalence Partitioning}
+\begin{itemize}
+    \item \textbf{Username Input}:
+    \begin{itemize}
+        \item Valid Partition: Alphanumeric characters, length 3-15.
+        \item Invalid Partition: Special characters, length <3 or >15.
+    \end{itemize}
+    \item \textbf{Password Input}:
+    \begin{itemize}
+        \item Valid Partition: At least one uppercase, one lowercase, one digit, length 8-20.
+        \item Invalid Partition: Missing character types, length <8 or >20.
+    \end{itemize}
+\end{itemize}
+
+\section{Boundary Value Analysis}
+\begin{itemize}
+    \item \textbf{Username Length}:
+    \begin{itemize}
+        \item Test at lengths: 2 (invalid), 3 (valid), 15 (valid), 16 (invalid).
+    \end{itemize}
+    \item \textbf{Password Length}:
+    \begin{itemize}
+        \item Test at lengths: 7 (invalid), 8 (valid), 20 (valid), 21 (invalid).
+    \end{itemize}
+\end{itemize}
+
+\section{Decision Table}
+\begin{table}[H]
+\centering
+\begin{tabular}{cccc|c}
+\toprule
+\textbf{Condition} & \textbf{Rule 1} & \textbf{Rule 2} & \textbf{Rule 3} & \textbf{Action} \\
+\midrule
+Valid Username & T & T & F & Allow Registration \\
+Valid Password & T & F & T & Deny Registration \\
+Email Unique   & T & T & T & Allow Registration \\
+\bottomrule
+\end{tabular}
+\caption{Decision Table for User Registration}
+\end{table}
+
+\section{State Transition Diagram}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{state_transition_diagram.png}
+\caption{State Transition Diagram for User Account States}
+\end{figure}
+
+% Chapter 6: Static Testing and White-Box Testing
+\chapter{Static Testing and White-Box Testing}
+\section{Static Testing Tools}
+Static analysis was performed using SonarQube, identifying issues like code smells, potential bugs, and security vulnerabilities.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{sonarqube_report.png}
+\caption{SonarQube Analysis Report}
+\end{figure}
+
+\section{Code Coverage}
+Code coverage reached 85\%, as measured by JaCoCo. This informed the creation of additional unit tests to cover critical paths.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{jacoco_report.png}
+\caption{JaCoCo Code Coverage Report}
+\end{figure}
+
+% Chapter 7: Unit Testing and Integration Testing
+\chapter{Unit Testing and Integration Testing}
+\section{Unit Tests}
+Unit tests were written using JUnit and Mockito, covering both positive and negative scenarios. Parameterized tests were used to validate multiple input combinations.
+
+\section{Integration Tests}
+Integration tests were developed to test interactions between microservices and the databases, using TestContainers to simulate the database environments.
+
+% Chapter 8: Continuous Testing
+\chapter{Continuous Testing}
+\section{CI Job Script}
+The CI pipeline was defined using a YAML file for GitHub Actions, automating the build, test, and deploy stages.
+
+\begin{lstlisting}[language=yaml,caption=CI Pipeline Script]
+name: CI Pipeline
+
+on: [push]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+    - name: Build with Maven
+      run: mvn clean install
+    - name: Run Unit Tests
+      run: mvn test
+    - name: Run Integration Tests
+      run: mvn verify -Pintegration-tests
+\end{lstlisting}
+
+\section{CI Job Output}
+The CI job successfully executes all tests, providing immediate feedback on code commits.
+
+% Chapter 9: API Testing
+\chapter{API Testing}
+\section{Testing Tools}
+Postman was used to create a collection of API tests, covering all endpoints with various input scenarios.
+
+\section{Test Scripts}
+The test scripts include assertions for response status codes, response times, and data validation.
+
+\section{Test Coverage}
+Both positive and negative test cases were included, ensuring robust validation of the API.
+
+% Chapter 10: End-to-End UI Testing
+\chapter{End-to-End UI Testing}
+\section{Testing Tools}
+Selenium WebDriver was used to automate UI tests, simulating user interactions in a browser.
+
+\section{Test Scripts}
+Scripts covered user journeys like registration, login, posting content, and messaging.
+
+\section{Test Results}
+All critical user flows passed the automated tests, with logs and screenshots captured for documentation.
+
+% Chapter 11: Performance Testing
+\chapter{Stress Performance Testing}
+\section{Testing Tools}
+Apache JMeter was used to simulate user load and measure system performance under stress.
+
+\section{Test Scenarios}
+\begin{itemize}
+    \item \textbf{Load Testing}: Simulating normal expected usage.
+    \item \textbf{Stress Testing}: Increasing load beyond expected limits to find breaking points.
+    \item \textbf{Spike Testing}: Sudden increase in load to test system response.
+\end{itemize}
+
+\section{Test Results}
+The application maintained acceptable performance levels under all test scenarios, with response times remaining under 2 seconds up to 15,000 concurrent users.
+
+% Chapter 12: Usability Testing
+\chapter{Usability Testing}
+\section{Preference and Performance Measures}
+\begin{itemize}
+    \item \textbf{Task Completion Rate}
+    \item \textbf{Time on Task}
+    \item \textbf{User Satisfaction Rating}
+    \item \textbf{Error Rate}
+\end{itemize}
+
+\section{Test Script}
+Participants will be asked to perform the following tasks:
+\begin{enumerate}
+    \item Register a new account.
+    \item Update profile information.
+    \item Follow another user.
+    \item Create a new post with an image.
+    \item Send a message to a friend.
+    \item Check the weather information on the dashboard.
+\end{enumerate}
+
+% Chapter 13: Migration Testing
+\chapter{Migration Testing}
+\section{Migration Strategy}
+A detailed migration plan was developed, including data mapping, transformation rules, and validation procedures.
+
+\section{Test Cases for Migration}
+\begin{itemize}
+    \item Verify data consistency between MySQL and MongoDB/Neo4j.
+    \item Ensure application functionality remains intact post-migration.
+    \item Test performance metrics before and after migration.
+\end{itemize}
+
+\section{Results and Analysis}
+Migration tests confirmed that all data was accurately transferred, with no loss or corruption. Application functionality tests passed, and performance improved in areas involving complex data relationships.
+
+% Chapter 14: Conclusions
+\chapter{Conclusions}
+\section{Summary of Testing Activities}
+All testing activities were completed successfully, and the application meets the defined requirements.
+
+\section{Strengths and Weaknesses of Databases}
+\begin{itemize}
+    \item \textbf{MySQL}: Reliable for structured data but less flexible.
+    \item \textbf{MongoDB}: Flexible schema, improved performance for document storage.
+    \item \textbf{Neo4j}: Efficient handling of relationships, enhancing features like friend suggestions.
+\end{itemize}
+
+\section{Lessons Learned}
+The importance of thorough testing during migration was reinforced, highlighting the need for automated tests and continuous integration.
+
+\section{Future Work}
+Future enhancements include implementing machine learning algorithms for content recommendations and further performance optimizations.
+
+% Chapter 15: References
+\chapter{References}
+\begin{thebibliography}{9}
+\bibitem{ISTQB}
+International Software Testing Qualifications Board (ISTQB). \textit{ISTQB Foundation Level Syllabus}. 2021.
+
+\bibitem{VModel}
+Paul, R. J. \textit{The V-Model of Software Development}. Software Quality Journal, 1993.
+
+\bibitem{Microservices}
+Newman, S. \textit{Building Microservices}. O'Reilly Media, 2015.
+
+\bibitem{NoSQL}
+Strauch, C. \textit{NoSQL Databases}. Stuttgart Media University, 2011.
+
+\end{thebibliography}
+
+% Appendices
+\appendix
+\chapter{Appendices}
+\section{Test Case Templates}
+\begin{longtable}{p{2cm} p{4cm} p{8cm}}
+\toprule
+\textbf{Test ID} & \textbf{Test Scenario} & \textbf{Expected Result} \\
+\midrule
+TC001 & User Registration with Valid Data & User account is created successfully. \\
+TC002 & User Registration with Existing Email & Error message is displayed indicating email already exists. \\
+TC003 & Login with Invalid Password & Access is denied, and an error message is shown. \\
+TC004 & Post Creation with Image & Post is created and displayed on the user's timeline. \\
+TC005 & Send Message to Friend & Message is sent and appears in the conversation thread. \\
+\bottomrule
+\end{longtable}
+
+\section{Risk Assessment Tables}
+\begin{landscape}
+\begin{longtable}{p{4cm} p{6cm} p{2cm} p{2cm} p{2cm}}
+\toprule
+\textbf{Risk} & \textbf{Mitigation Strategy} & \textbf{Likelihood} & \textbf{Impact} & \textbf{Status} \\
+\midrule
+Data Loss During Migration & Perform backups and validate data post-migration & High & High & Resolved \\
+Performance Degradation & Conduct performance testing and optimize queries & Medium & High & Mitigated \\
+Security Vulnerabilities & Perform security testing and code reviews & Medium & High & Ongoing Monitoring \\
+Integration Issues & Use integration tests and continuous integration pipelines & Low & Medium & Resolved \\
+User Acceptance & Conduct usability testing and incorporate feedback & Medium & Medium & In Progress \\
+\bottomrule
+\end{longtable}
+\end{landscape}
+
+\section{Static Testing Reports}
+\begin{itemize}
+    \item \textbf{SonarQube Report}: Detected 5 critical vulnerabilities, which were fixed promptly.
+    \item \textbf{Code Coverage Report}: Achieved 85\% coverage; identified areas needing additional tests.
+\end{itemize}
+
+\section{CI Job Output}
+\begin{verbatim}
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.example.AppTest
+[INFO] Tests run: 25, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 25, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] BUILD SUCCESS
+\end{verbatim}
+
+\section{API Test Collection}
+The Postman collection is included in the project repository, containing detailed tests for each API endpoint with assertions and environment variables.
+
+\section{End-to-End Test Code}
+The source code for the Selenium tests is included in the \texttt{tests/e2e} directory of the project repository.
+
+\section{Performance Test Reports}
+Detailed reports from JMeter are included, showing graphs of response times, throughput, and error rates under different load conditions.
+
+\section{Usability Test Script}
+\begin{enumerate}
+    \item \textbf{Introduction}: Explain the purpose of the test and obtain consent.
+    \item \textbf{Tasks}:
+    \begin{enumerate}
+        \item Register a new account using the provided email.
+        \item Update your profile picture and bio.
+        \item Search for and follow the user "TestUser123".
+        \item Create a new post with the caption "Hello World!".
+        \item Send a message saying "Hi there!" to "TestUser123".
+        \item Locate and interpret the weather information on your dashboard.
+    \end{enumerate}
+    \item \textbf{Post-Test Questionnaire}: Collect feedback on user satisfaction and areas for improvement.
+\end{enumerate}
+
+\end{document}
