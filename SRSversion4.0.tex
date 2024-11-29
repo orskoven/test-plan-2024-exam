@@ -1,0 +1,185 @@
+\documentclass[12pt]{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{longtable}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{1em}{}
+
+\title{Software Requirements Specification (SRS) \\ \vspace{1em} \Large Intelligent Cyber Threat Intelligence System}
+\author{Group: Security Insights \\ Version: 4.0}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section*{Revision History}
+\begin{longtable}{|p{2cm}|p{3cm}|p{3cm}|p{5cm}|}
+\hline
+\textbf{Version} & \textbf{Date} & \textbf{Author(s)} & \textbf{Description} \\
+\hline
+1.0 & 2024-11-28 & Security Insights & Initial draft. Monolithic design. \\
+\hline
+2.0 & 2024-11-30 & Security Insights & Microservices architecture and multi-database integration. \\
+\hline
+3.0 & 2024-12-01 & Security Insights & Enhanced Azure deployment, CTI-specific pipelines, and dashboards. \\
+\hline
+3.1 & 2024-12-02 & Security Insights & Improved RBAC, integration with SIEM/SOAR, and compliance-focused revisions. \\
+\hline
+4.0 & \today & Security Insights & Comprehensive improvements, including risk analysis, testing traceability, and scalability enhancements. \\
+\hline
+\end{longtable}
+
+\newpage
+
+\section{Introduction}
+\subsection{Purpose}
+This document specifies requirements for developing a robust Cyber Threat Intelligence (CTI) system for a Fortune 10 company. The system will:
+\begin{itemize}
+    \item Integrate structured, unstructured, and relationship-based threat data across relational, document, and graph databases.
+    \item Provide real-time threat ingestion, enrichment, and scoring pipelines.
+    \item Enable scalability and resilience via microservices on Azure Kubernetes Service (AKS).
+    \item Offer actionable insights to C-suite executives and SOC analysts via interactive dashboards.
+\end{itemize}
+
+\subsection{Scope}
+The application addresses the needs of enterprise-level CTI by:
+\begin{itemize}
+    \item Automating ingestion from threat feeds (OSINT, commercial, proprietary).
+    \item Supporting real-time processing and enrichment pipelines.
+    \item Aligning with frameworks such as MITRE ATT&CK.
+    \item Integrating with SIEM/SOAR platforms for actionable intelligence.
+    \item Ensuring security compliance with GDPR and ISO 27001.
+\end{itemize}
+
+\subsection{Document Overview}
+The SRS is structured into the following sections:
+\begin{enumerate}
+    \item Introduction: Goals, scope, and definitions.
+    \item Overall Description: High-level product perspective and operating environment.
+    \item Specific Requirements: Detailed functional and non-functional requirements.
+    \item System Architecture: Design details for deployment and microservices.
+    \item Security: Authentication, authorization, and data protection measures.
+    \item Appendices: Supporting diagrams and documentation.
+\end{enumerate}
+
+\subsection{Definitions, Acronyms, and Abbreviations}
+\begin{itemize}
+    \item CTI: Cyber Threat Intelligence
+    \item SIEM: Security Information and Event Management
+    \item SOAR: Security Orchestration, Automation, and Response
+    \item RBAC: Role-Based Access Control
+    \item AKS: Azure Kubernetes Service
+\end{itemize}
+
+\subsection{References}
+\begin{enumerate}
+    \item \href{https://spring.io/projects/spring-boot}{Spring Boot Documentation}
+    \item \href{https://azure.microsoft.com/}{Azure Services Documentation}
+    \item \href{https://attack.mitre.org/}{MITRE ATT&CK Framework}
+    \item \href{https://owasp.org}{OWASP Security Standards}
+\end{enumerate}
+
+\section{Overall Description}
+\subsection{Product Perspective}
+This system integrates backend APIs and CTI pipelines into a scalable, modular architecture:
+\begin{itemize}
+    \item **Databases**: MySQL for structured data, MongoDB for nested datasets, Neo4j for relationship traversal.
+    \item **Deployment**: Hosted on Azure AKS with global redundancy.
+    \item **Integration**: Real-time SIEM/SOAR integration for enriched threat data dissemination.
+\end{itemize}
+
+\subsection{Product Features}
+\begin{itemize}
+    \item Ingests and enriches threat data from multiple sources.
+    \item Supports multi-database CRUD operations via REST APIs.
+    \item Provides role-based dashboards with KPIs and trend analysis.
+    \item Ensures compliance with regulatory standards.
+\end{itemize}
+
+\subsection{Assumptions and Dependencies}
+\begin{itemize}
+    \item Azure cloud services will remain operational and available globally.
+    \item Threat feed providers will deliver data in agreed formats.
+    \item End-users will have high-speed internet connections.
+\end{itemize}
+
+\subsection{Operating Environment}
+\begin{itemize}
+    \item Backend: Java Spring Boot.
+    \item Databases: MySQL, MongoDB, Neo4j.
+    \item Deployment: Azure Kubernetes Service (AKS).
+    \item Analytics: Azure Machine Learning and Power BI.
+\end{itemize}
+
+\section{Specific Requirements}
+\subsection{Functional Requirements}
+\begin{itemize}
+    \item FR-1: Provide REST APIs for CRUD operations on all databases.
+    \item FR-2: Implement real-time ingestion pipelines via Azure Event Hubs.
+    \item FR-3: Support role-based access for data retrieval and processing.
+    \item FR-4: Enrich threats using MITRE ATT&CK mapping.
+    \item FR-5: Deliver data to SIEM/SOAR systems in enriched format.
+\end{itemize}
+
+\subsection{Non-functional Requirements}
+\begin{itemize}
+    \item NFR-1: Ensure 99.99\% uptime with automated failover.
+    \item NFR-2: Handle 50k+ IOCs/day with scalable microservices.
+    \item NFR-3: API response time must not exceed 200ms under load.
+    \item NFR-4: Encrypt all sensitive data at rest and in transit.
+\end{itemize}
+
+\section{System Architecture}
+\subsection{Microservices Design}
+Each microservice is independent, focusing on a specific database or task:
+\begin{itemize}
+    \item Relational DB Microservice: `/mysql/api/v1/...`
+    \item Document DB Microservice: `/mongodb/api/v1/...`
+    \item Graph DB Microservice: `/neo4j/api/v1/...`
+    \item Enrichment Service: Integrates MITRE ATT&CK and predictive analytics.
+\end{itemize}
+
+\subsection{Azure Deployment Architecture}
+\begin{itemize}
+    \item AKS for containerized deployment.
+    \item Azure SQL Database for relational storage.
+    \item Azure Cosmos DB for document storage.
+    \item Azure Monitor and Sentinel for observability.
+\end{itemize}
+
+\section{Risk Assessment}
+\subsection{Risk Table}
+\begin{longtable}{|p{3cm}|p{4cm}|p{4cm}|p{4cm}|}
+\hline
+\textbf{Risk} & \textbf{Impact} & \textbf{Likelihood} & \textbf>Mitigation> \\ 
+\hline
+Service Outage & High & Moderate & Implement AKS redundancy and failover systems. \\ 
+\hline
+Data Breach & Critical & Low & Encrypt data and use Azure Key Vault. \\ 
+\hline
+API Rate Limits & Medium & High & Throttle API requests and implement caching. \\ 
+\hline
+\end{longtable}
+
+\section{Testing Traceability}
+\subsection{Traceability Matrix}
+\begin{longtable}{|p{3cm}|p{4cm}|p{5cm}|}
+\hline
+\textbf{Requirement} & \textbf{Test Case ID} & \textbf{Testing Tool} \\
+\hline
+FR-1 & TC-01 & Postman API tests \\
+\hline
+FR-2 & TC-02 & JMeter load test \\
+\hline
+\end{longtable}
+
+\end{document}
