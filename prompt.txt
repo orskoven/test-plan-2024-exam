@@ -1,0 +1,620 @@
+Act as the top ISO 27001 and GPDT and  ISTQB certified fortune10 consultant markdown file writer and presenter with top exllent markdown skills and istqb knowledge intelligently expert level 50 years of experience and very skilled presentation in markdown and stream lining documents and reports fully generated in markdown format with relevant copy sections and extremely good matrixes that is coherent and documented and streamlined and traceability compliant with the whole test documentation artefacts. Your TASK is to fully conduct a report in top markdown ui ux report for a cyber threat intelligence system building upon the current artefacts that all most be written in ui ux top human centered designed by apple design team to be presented to stake holders and well designed matrixes clearly visual presents all information. GENERATE and ensure all is well written markdown and a professional structure high industry standards. \documentclass[12pt]{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{longtable}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{1em}{}
+
+\title{Software Requirements Specification (SRS) \\ \vspace{1em} \Large Intelligent Cyber Threat Intelligence System}
+\author{Group: Security Insights \\ Version: 4.1}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section*{Revision History}
+\begin{longtable}{|p{2cm}|p{3cm}|p{3cm}|p{5cm}|}
+\hline
+\textbf{Version} & \textbf{Date} & \textbf{Author(s)} & \textbf{Description} \\
+\hline
+1.0 & 2024-11-28 & Security Insights & Initial draft. Monolithic design. \\
+\hline
+2.0 & 2024-11-30 & Security Insights & Microservices architecture and multi-database integration. \\
+\hline
+3.0 & 2024-12-01 & Security Insights & Enhanced Azure deployment, CTI-specific pipelines, and dashboards. \\
+\hline
+3.1 & 2024-12-02 & Security Insights & Improved RBAC, integration with SIEM/SOAR, and compliance-focused revisions. \\
+\hline
+4.0 & 2024-12-05 & Security Insights & Comprehensive improvements for traceability, scalability, and testing strategies. \\
+\hline
+4.1 & \today & Security Insights & Focused enhancements addressing testing, risk mitigation, and practical exam preparation. \\
+\hline
+\end{longtable}
+
+\newpage
+
+\section{Introduction}
+\subsection{Purpose}
+This document specifies the requirements for developing a robust Cyber Threat Intelligence (CTI) system tailored for enterprise-grade threat detection and response. Key objectives include:
+\begin{itemize}
+    \item Real-time ingestion and analysis of threat data across diverse formats and sources.
+    \item Integration with SIEM/SOAR systems for actionable intelligence.
+    \item Role-specific dashboards catering to SOC analysts, threat hunters, executives, and auditors.
+\end{itemize}
+
+\subsection{Scope}
+The system focuses on enhancing enterprise cybersecurity by:
+\begin{itemize}
+    \item Automating ingestion and enrichment of structured, unstructured, and relational threat intelligence data.
+    \item Providing predictive analytics using data science pipelines for proactive threat mitigation.
+    \item Adhering to industry standards such as GDPR, ISO 27001, and MITRE ATT&CK.
+\end{itemize}
+
+\subsection{Document Overview}
+The SRS is structured as follows:
+\begin{enumerate}
+    \item **Introduction**: Project goals, definitions, and references.
+    \item **Overall Description**: High-level view of the system’s architecture and features.
+    \item **Specific Requirements**: Functional and non-functional requirements.
+    \item **Testing and Risk Management**: Testing strategies, traceability, and risk mitigation plans.
+    \item **System Architecture**: Details of microservices, deployment, and database design.
+    \item **Appendices**: Supporting diagrams, sample API documentation, and YAML configurations.
+\end{enumerate}
+
+\newpage
+
+\section{Overall Description}
+\subsection{Product Features}
+\begin{itemize}
+    \item **Real-time Threat Ingestion**: Automate the ingestion of 50k+ Indicators of Compromise (IOCs) daily.
+    \item **Data Enrichment**: Use MITRE ATT&CK mapping to classify tactics, techniques, and procedures (TTPs).
+    \item **Actionable Dashboards**: Role-specific insights for operational, tactical, and strategic decision-making.
+    \item **Predictive Analytics**: Detect patterns and predict threats using machine learning models.
+    \item **Compliance Monitoring**: Audit trails, GDPR-compliant pseudonymization, and ISO 27001 ISMS integration.
+\end{itemize}
+
+\subsection{Preconditions}
+\begin{itemize}
+    \item Threat feeds are accessible via authenticated APIs.
+    \item The Azure cloud environment supports scalable deployments.
+    \item End-users are trained to interpret predictive analytics and dashboard KPIs.
+\end{itemize}
+
+\subsection{Assumptions and Dependencies}
+\begin{itemize}
+    \item External APIs will maintain uptime and data quality.
+    \item The organization uses modern browsers to access dashboards.
+    \item No major disruptions in Azure cloud services.
+\end{itemize}
+
+\newpage
+
+\section{Specific Requirements}
+\subsection{Functional Requirements}
+\begin{itemize}
+    \item **FR-1**: Provide APIs for CRUD operations on relational, document, and graph databases.
+    \item **FR-2**: Ingest threat feeds from OSINT, commercial, and proprietary sources via Azure Event Hubs.
+    \item **FR-3**: Enrich threat data with MITRE ATT&CK mapping and predictive analytics.
+    \item **FR-4**: Provide role-based access control (RBAC) for different user groups.
+    \item **FR-5**: Export enriched data to SIEM/SOAR platforms in JSON format.
+\end{itemize}
+
+\subsection{Non-functional Requirements}
+\begin{itemize}
+    \item **NFR-1**: Ensure 99.99\% system uptime with automated failover mechanisms.
+    \item **NFR-2**: Support a minimum of 50k IOCs/day with 200ms API response time under load.
+    \item **NFR-3**: Ensure data encryption at rest (AES-256) and in transit (TLS 1.3).
+\end{itemize}
+
+\subsection{Testing Traceability Matrix}
+\begin{longtable}{|p{3cm}|p{4cm}|p{5cm}|}
+\hline
+\textbf{Requirement} & \textbf{Test Case ID} & \textbf{Testing Tool/Methodology} \\
+\hline
+FR-1 & TC-001 & API tests using Postman \\
+\hline
+FR-2 & TC-002 & JMeter stress testing for ingestion pipelines \\
+\hline
+FR-3 & TC-003 & Unit testing with Mockito for enrichment logic \\
+\hline
+FR-4 & TC-004 & RBAC testing using Selenium for UI workflows \\
+\hline
+FR-5 & TC-005 & API contract tests with Swagger Validator \\
+\hline
+\end{longtable}
+
+\newpage
+
+\section{Testing and Risk Management}
+\subsection{Testing Strategies}
+\begin{itemize}
+    \item **Unit Tests**: Validate individual modules (e.g., data enrichment services) using the AAA pattern.
+    \item **Integration Tests**: Test API endpoints with mock external dependencies.
+    \item **End-to-End Tests**: Use Selenium to automate dashboard workflows for SOC analysts and executives.
+    \item **Performance Tests**: Conduct load, stress, and spike testing with JMeter to simulate ingestion of 50k IOCs/day.
+\end{itemize}
+
+\subsection{Risk Assessment}
+\begin{longtable}{|p{3cm}|p{4cm}|p{4cm}|p{4cm}|}
+\hline
+\textbf{Risk} & \textbf{Impact} & \textbf{Likelihood} & \textbf{Mitigation} \\ 
+\hline
+Data Breach & Critical & Medium & Encrypt data and use Azure Key Vault for credentials. \\ 
+\hline
+API Downtime & High & High & Implement retries and caching for API calls. \\ 
+\hline
+Integration Errors & Medium & Low & Use CI pipelines with automated integration tests. \\ 
+\hline
+\end{longtable}
+
+\newpage
+
+\section{System Architecture}
+\subsection{Microservices Design}
+\begin{itemize}
+    \item **Database Services**: Separate microservices for relational (MySQL), document (MongoDB), and graph (Neo4j) databases.
+    \item **Enrichment Services**: Python-based services integrating MITRE ATT&CK and Azure Machine Learning.
+    \item **Dashboard Services**: Frontend services deployed on AKS, backed by Power BI for visualization.
+\end{itemize}
+
+\subsection{Azure Deployment}
+\begin{itemize}
+    \item **Redundancy**: Multi-region deployment for global failover.
+    \item **Monitoring**: Azure Monitor and Sentinel for observability.
+    \item **Security**: RBAC and Key Vault for sensitive configuration data.
+\end{itemize}
+
+\section{Appendices}
+\begin{itemize}
+    \item **Appendix A**: ER Diagram for MySQL.
+    \item **Appendix B**: Sample API Contract (Swagger documentation).
+    \item **Appendix C**: YAML Configuration for Kubernetes Deployment.
+    \item **Appendix D**: Mockups of SOC and Executive Dashboards.
+\end{itemize}
+
+\end{document}\documentclass[12pt]{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{longtable}
+\usepackage{hyperref}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{1em}{}
+
+\title{Enhanced Formal Review \\ \vspace{1em} \Large Software Requirements Specification (SRS) \\ Intelligent Cyber Threat Intelligence System}
+\author{Review Group: Excellence Review Board \\ Version: 1.1}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Precondition Document}
+\textbf{Group Members:}
+\begin{itemize}
+    \item Dr. Jane Smith
+    \item John Doe
+    \item Maria Gonzales
+    \item Rahul Patel
+    \item Emily Chen
+\end{itemize}
+
+\textbf{Application Description:}
+The project under review is a Cyber Threat Intelligence System designed for enterprise-grade threat detection and response. Its key features include:
+\begin{itemize}
+    \item Real-time ingestion of threat data.
+    \item Enrichment of data with MITRE ATT\&CK classifications.
+    \item Actionable dashboards for security teams.
+    \item Predictive analytics for threat forecasting.
+    \item Integration with SIEM/SOAR platforms.
+\end{itemize}
+
+\textbf{Planned Testing Activities:}
+\begin{itemize}
+    \item Unit testing using the AAA pattern and parameterized tests.
+    \item Integration testing of APIs and database interactions.
+    \item Stress and performance testing for ingestion pipelines.
+    \item End-to-end UI testing of role-specific dashboards.
+    \item Security testing to ensure compliance with GDPR and ISO 27001.
+    \item Regression testing for iterative releases.
+\end{itemize}
+
+\newpage
+
+\section{Enhanced Formal Review}
+\subsection{Role Assignment for Review}
+\begin{longtable}{|p{3cm}|p{5cm}|p{7cm}|}
+\hline
+\textbf{Name} & \textbf{Role} & \textbf{Responsibilities} \\
+\hline
+Dr. Jane Smith & Lead Reviewer & Review architecture, testing strategy, and SRS alignment. \\
+\hline
+John Doe & Compliance Specialist & Evaluate legal and regulatory compliance. \\
+\hline
+Maria Gonzales & Usability Expert & Assess dashboards and end-user workflows. \\
+\hline
+Rahul Patel & Security Analyst & Critique security mechanisms and risk mitigation. \\
+\hline
+Emily Chen & Performance Analyst & Analyze performance benchmarks and stress testing. \\
+\hline
+\end{longtable}
+
+\subsection{Detailed Observations and Critique}
+\subsubsection{Introduction}
+\textbf{Key Issues:}
+\begin{itemize}
+    \item Ambiguity in project goals. No clear success metrics provided.
+    \item Lack of differentiation between intended user groups (e.g., SOC analysts, executives).
+\end{itemize}
+
+\textbf{Improvements:}
+\begin{itemize}
+    \item Define measurable outcomes, such as: "Reduce SOC analyst response time by 30%."
+    \item Clearly specify use cases for each user group.
+\end{itemize}
+
+\subsubsection{Overall Description}
+\textbf{Key Issues:}
+\begin{itemize}
+    \item Over-reliance on Azure-specific services, ignoring multi-cloud or hybrid options.
+    \item Unclear preconditions and dependencies for threat ingestion pipelines.
+\end{itemize}
+
+\textbf{Improvements:}
+\begin{itemize}
+    \item Incorporate alternative cloud strategies for vendor neutrality.
+    \item Document fallback mechanisms for precondition failures.
+\end{itemize}
+
+\subsubsection{Specific Requirements}
+\textbf{Functional Requirements:}
+\begin{itemize}
+    \item FR-1 lacks details on API versioning and error handling mechanisms.
+    \item FR-4 does not specify how RBAC will be enforced for different roles.
+\end{itemize}
+
+\textbf{Non-Functional Requirements:}
+\begin{itemize}
+    \item NFR-1 does not specify system recovery time after failure.
+    \item NFR-3 encryption requirements omit specific compliance benchmarks.
+\end{itemize}
+
+\textbf{Improvements:}
+\begin{itemize}
+    \item Enhance API documentation with explicit error codes, rate limits, and versioning strategy.
+    \item Specify encryption standards (e.g., FIPS 140-2) and recovery time objectives (RTO).
+\end{itemize}
+
+\subsubsection{Testing and Risk Management}
+\textbf{Key Issues:}
+\begin{itemize}
+    \item Testing strategies lack depth; no mention of parameterized tests or stress testing design.
+    \item Risk table ignores critical risks, such as vendor lock-in and cascading failures.
+\end{itemize}
+
+\textbf{Improvements:}
+\begin{itemize}
+    \item Include examples of test cases, such as parameterized tests for API inputs and outputs.
+    \item Expand risk assessment to include contingency plans for vendor lock-in.
+\end{itemize}
+
+\subsubsection{System Architecture}
+\textbf{Key Issues:}
+\begin{itemize}
+    \item Inadequate focus on security layers in microservices.
+    \item Over-reliance on Azure services without consideration of on-premise deployments.
+\end{itemize}
+
+\textbf{Improvements:}
+\begin{itemize}
+    \item Define a layered security architecture for microservices.
+    \item Provide an abstract deployment model adaptable to non-Azure environments.
+\end{itemize}
+
+\newpage
+
+\section{Exam-Related Questions and Insights}
+\subsection{Testing Techniques}
+\begin{itemize}
+    \item \textbf{Boundary Values Technique:} Applied to API rate limits and input validation.
+    \item \textbf{Decision Table:} Omitted due to a lack of complex conditional logic in workflows.
+\end{itemize}
+
+\subsection{Unit Testing and Patterns}
+\begin{itemize}
+    \item \textbf{AAA Pattern:} Used for testing enrichment services by arranging test data, executing transformations, and asserting outputs.
+    \item \textbf{Parameterized Tests:} Employed for API endpoint tests using frameworks like JUnit and TestNG.
+    \item \textbf{Test Doubles:} Used mock databases and APIs to isolate components during integration tests.
+\end{itemize}
+
+\subsection{Database and API Testing}
+\begin{itemize}
+    \item \textbf{Database Testing:} Validated schema integrity, query performance, and transactional consistency.
+    \item \textbf{API Testing:} Designed contract tests for external APIs with Swagger and tested failure scenarios.
+\end{itemize}
+
+\subsection{Performance Testing}
+\begin{itemize}
+    \item \textbf{Stress Tests:} Simulated ingestion of 100k IOCs to verify system resilience.
+    \item \textbf{Spike Tests:} Tested system response to sudden surges in threat data ingestion.
+\end{itemize}
+
+\subsection{Key Answers for Theoretical Questions}
+\begin{itemize}
+    \item \textbf{Testing vs Debugging:} Testing identifies defects; debugging locates and resolves the cause.
+    \item \textbf{Regression Testing:} Ensures that new code changes do not break existing functionality.
+    \item \textbf{Test Pyramid:} Prioritizes unit tests over integration and UI tests for efficiency.
+\end{itemize}
+
+\newpage
+
+\section{Conclusion}
+\textbf{Overall Rating:} **3.5/5**  
+While the document demonstrates potential for real-world application, it falls short in clarity, testing depth, and adaptability.
+
+\end{document}  HERE is an example of markdown formatting As an **ISTQB-certified professional**, I will critically evaluate the artifact with a structured critique and provide an upgraded version that meets and exceeds the highest standards for a professional risk assessment document. This version will integrate **best practices in software quality assurance**, **risk-based testing approaches**, and **industry-leading methodologies** to ensure clarity, utility, and strategic alignment.
+
+---
+
+### **Critique of the Current Artifact**
+
+1. **Lack of Strategic Depth in Risk Analysis**:
+   - Risks are treated as static; there’s no dynamic evaluation of evolving risks over the software lifecycle.
+   - Impact and likelihood ratings lack quantitative backing, reducing credibility.
+
+2. **Ineffective Communication of Risk Prioritization**:
+   - The risk matrices fail to emphasize critical risks that require immediate attention.
+   - No focus on residual risks post-mitigation.
+
+3. **Limited Integration of ISTQB Principles**:
+   - Missing structured techniques such as cause-effect analysis, failure mode effect analysis (FMEA), and alignment with risk-based testing frameworks.
+
+4. **Lack of Contextual Insights**:
+   - No explicit link between the identified risks and business objectives, making it difficult for stakeholders to understand the potential consequences.
+
+5. **Accessibility and Presentation Gaps**:
+   - Dense tables and static visuals hinder readability and engagement.
+   - Color-coded matrices lack WCAG compliance for accessibility.
+
+---
+
+### **Upgraded Artifact**
+
+Below is the enhanced artifact that addresses these shortcomings while incorporating **ISTQB-aligned principles** and a **beyond-the-basics approach** for professional risk management.
+
+---
+
+# **📊 Comprehensive Risk Assessment and Self-Reflection Report**  
+## For the Cyber Threat Intelligence System (CTIS)  
+**Version 3.0**  
+**Prepared by**: **Risk Excellence Review Board**  
+📅 **Date:** `{{Insert Today's Date}}`
+
+---
+
+## **🔍 Executive Summary**  
+
+This report presents an advanced, lifecycle-driven risk assessment framework for the **Cyber Threat Intelligence System (CTIS)**, integrating best practices in risk-based testing and quality assurance. It includes:
+1. **Critical Risks** prioritized using a dynamic evaluation framework.
+2. A **Mitigation Strategy** aligned with business goals and compliance mandates.
+3. **Residual Risk Analysis** to evaluate post-mitigation scenarios.
+4. A **Self-Reflection** section to highlight learnings and actionable insights.
+
+---
+
+## **1. Purpose and Context**  
+
+The CTIS project aims to deliver enterprise-grade cybersecurity solutions through:
+- **Real-Time Threat Detection**  
+- **Predictive Analytics**  
+- **Integration with SIEM/SOAR**  
+
+### **Business Objectives**  
+The system must achieve:  
+- **99.99% uptime** for uninterrupted threat analysis.  
+- **GDPR and ISO 27001 compliance** for legal adherence.  
+- Scalability to handle **50k IOCs/day** while ensuring low latency.
+
+---
+
+## **2. Testing and Assurance Plan**  
+
+### **2.1 Test Objectives**
+| **Objective**                     | **Aligned Risk**                     | **Outcome Expected**                      |
+|------------------------------------|--------------------------------------|-------------------------------------------|
+| Validate enrichment services.     | Risk of performance degradation.     | Reduced latency for high IOC loads.       |
+| Verify API security.               | Risk of data breach.                 | Secure data pipelines (TLS 1.3).          |
+| Test compliance adherence.         | Risk of regulatory non-compliance.   | GDPR-compliant pseudonymization methods.  |
+| Stress test for scalability.       | Risk of resource exhaustion.         | Stable performance under load surges.     |
+
+---
+
+## **3. Comprehensive Risk Assessment**  
+
+### **3.1 Risk Evaluation Framework**  
+
+**Risk Levels**: Critical (🔴), High (⚠️), Medium (🟠), Low (🟢).  
+**Metrics Used**:  
+- **Impact**: Quantified based on financial, reputational, and legal repercussions.  
+- **Likelihood**: Derived from historical data, project complexity, and control measures.  
+
+---
+
+### 🚨 **Initial Risk Assessment (Pre-Development)**  
+
+| **Risk**                 | **Impact** | **Likelihood** | **Owner**         | **Mitigation Strategy**                             |  
+|--------------------------|------------|----------------|-------------------|----------------------------------------------------|  
+| Vendor Lock-In (Azure)   | High       | Medium         | Architect Lead    | Enable containerization for multi-cloud use.       |  
+| Data Breach              | Critical   | Medium         | Security Analyst  | AES-256 encryption and periodic penetration tests. |  
+| Performance Degradation  | High       | High           | Performance Lead  | Auto-scaling Kubernetes clusters for scalability.  |  
+| API Downtime             | Medium     | High           | Integration Lead  | Backup APIs and failover mechanisms.               |  
+| Regulatory Non-Compliance| High       | Low            | Compliance Lead   | Early integration of GDPR-compliant designs.       |  
+
+---
+
+### 🛠️ **Risk Reassessment (Mid-Development)**  
+
+| **Risk**                 | **Impact** | **Likelihood** | **Mitigation Progress**                        |  
+|--------------------------|------------|----------------|-----------------------------------------------|  
+| Vendor Lock-In (Azure)   | High       | Medium         | Multi-cloud container proof-of-concept tested.|  
+| Data Breach              | Critical   | Medium         | Enhanced SOC monitoring and TLS upgrades.     |  
+| Performance Degradation  | High       | Medium         | Response times optimized with caching.        |  
+| API Downtime             | Medium     | Medium         | Backup APIs integrated; failover validated.   |  
+| Regulatory Non-Compliance| High       | Low            | Scheduled GDPR audit and implemented logging. |  
+
+---
+
+### ✅ **Final Risk Assessment (Post-Mitigation)**  
+
+| **Risk**                 | **Impact** | **Likelihood** | **Residual Risk** | **Resolution**                                     |  
+|--------------------------|------------|----------------|--------------------|--------------------------------------------------|  
+| Vendor Lock-In (Azure)   | High       | Low            | Minimal            | Deployed on Kubernetes for multi-cloud portability.|  
+| Data Breach              | Critical   | Low            | Negligible         | Routine pen tests verified secure endpoints.      |  
+| Performance Degradation  | High       | Low            | Negligible         | 99.99% uptime achieved with scaling enhancements.|  
+| API Downtime             | Medium     | Low            | Negligible         | Failover mechanisms fully operational.           |  
+| Regulatory Non-Compliance| High       | Low            | Minimal            | GDPR audits successfully completed.              |  
+
+---
+
+### **3.2 Residual Risk Summary**  
+
+Residual risks, post-mitigation, are all reduced to **low or negligible levels**. Any outstanding risks are documented in **Appendix A: Risk Register** for ongoing monitoring.
+
+---
+
+## **4. Risk Visualization and Insights**  
+
+### **4.1 Visual Risk Progression**  
+
+#### **Risk Likelihood Matrix (Before Mitigation)**  
+
+```plaintext
++-------------------+-------+-------+-------+-------+-------+
+| Impact            | VL    | Low   | Med   | High  | Crit  |
++-------------------+-------+-------+-------+-------+-------+
+| Critical          |       |       |       | 🔴    | 🔴    |
+| High              |       |       | ⚠️    | ⚠️    |       |
+| Medium            |       | 🟠    | 🟠    |       |       |
++-------------------+-------+-------+-------+-------+-------+
+```
+
+#### **Risk Likelihood Matrix (Post-Mitigation)**  
+
+```plaintext
++-------------------+-------+-------+-------+-------+-------+
+| Impact            | VL    | Low   | Med   | High  | Crit  |
++-------------------+-------+-------+-------+-------+-------+
+| Critical          |       | 🟢    |       |       |       |
+| High              |       | 🟢    |       |       |       |
+| Medium            | 🟢    |       |       |       |       |
++-------------------+-------+-------+-------+-------+-------+
+```
+
+---
+
+## **5. Self-Reflection and Recommendations**  
+
+### **5.1 Key Learnings**  
+1. Risk tracking improved after integrating **ISTQB techniques** (e.g., boundary analysis, failure-based prioritization).  
+2. Early-stage over-reliance on Azure could have been mitigated with earlier multi-cloud tests.  
+
+### **5.2 Recommendations**  
+- Adopt a continuous risk assessment process post-launch.  
+- Automate compliance monitoring for ISO 27001 adherence.
+
+---
+
+This enhanced artifact is streamlined, integrates **ISTQB-aligned risk practices**, and is tailored for executive decision-making while ensuring comprehensiveness and usability. HERE is THE REST OF THE REPORT YOU MUST GENERATE AND STREAMLINE ALL ARTEFACTS Dit svar
+Gruppemedlemmer
+Simon Dieckmann Ørskov Beckmann
+Dit svar  IKKE AFLEVERET
+Afleveringsopgave
+The Second Mandatory Assignment constitutes the Exam Project.
+
+The Exam Project will be developed in groups of 2 to 5 students. Please write down your names at https://studkea.sharepoint.com/:x:/s/TeamSOFT-E24-Testing/ESUSIQRlWK1Dk5Xc9hkRznQBd7bYemUaihbqVqV32Zu_rw?e=3ltWUZ.
+
+Each group of students will perform diverse forms of testing and generate several deliverables on an application of their choice (either built specifically for this project, a repurposed app or even someone else’s code). The topic, business idea, specifications, type of application (web, mobile, standalone), programming language(s), DBMSs, test tools, continuous integration tools, and IDEs used will be decided by the students. However, the application must include the following:
+
+A frontend
+A backend with an API
+A database
+A connection to an external, public API (could be something simple like a weather widget)
+Task list:
+
+Review.
+One member of the group will write an SRS (Software Requirements Specification) for the application in the format chosen by the students (it can be a series of user stories).
+The remaining members will conduct a formal review and generate a review document.
+Deliverables:
+The SRS (pdf file)
+The review document (pdf file), including the roles assigned to each group member
+Risk assessment.
+Deliverables (both in a single pdf file):
+Risk table(s). Either one that includes the follow-ups to the risks throughout the project’s development or several tables at different stages of development (in that case, at least an initial table, one created mid-development, and a final one must be included)
+Risk matrices. Several illustrating the state of the risks at several phases of the project
+Black-box test design. Black-box techniques will help identify test cases.
+Deliverables (all in a single pdf file):
+Equivalence partitioning analysis
+Boundary value analysis
+Decision table(s) (only if relevant)
+State transition diagram(s) and/or state transition table(s) (only if relevant)
+Static Testing Tools and White-box test design. Use the static testing tool(s) of your choice (besides linters and IDE extensions) and document their contribution.
+Include coverage calculation
+Deliverables (all in a single pdf file):
+Static testing tool(s) reports/screenshots and brief explanation of results
+Code coverage report and brief explanation of how it helped design unit tests
+Unit testing and integration testing. Design and implement:
+Unit tests        
+Integration tests in code (unless you decide to mock all dependencies)
+Pay attention to the following:
+
+Comprehensive assertions and test cases are expected
+The test cases identified in the black-box design phase must serve as a starting point
+Use parameterised tests/data providers
+Deliverables:
+Source code of the application
+Source code of the unit tests and integration tests
+Continuous testing. Create an online code repository and a continuous integration job or pipeline that checks potential integration errors.
+The CI job must automate the execution of the unit tests and integration tests in code
+Deliverables:
+CI job script (xml/yaml file or similar)
+Output of the integration project          
+(if the CI tool does not generate a file, copy the output and paste it on a text file)
+API testing. Use the tool of your choice (e.g., Postman, Thunder Client, Insomnia...) to design and implement test scripts on your backend’s API.
+Test all your endpoints for different elements (e.g., HTTP status codes, execution time, JSON content...)
+Positive and negative testing is expected
+Deliverables:
+Collection and environment in JSON format, or a similar output
+End-to-end UI testing. Design and implement a series of end-to-end tests using a UI automation tool (e.g., Selenium WebDriver, Cypress, Playwright, Espresso)
+The tests must be in code. Scripting tools like Selenium IDE are forbidden
+Deliverables:
+Source code of the end-to-end tests
+Stress performance testing. Implement load, stress, and spike testing on the application with a stress performance testing application (e.g., Apache JMeter).
+Deliverables:
+Reports or screenshots documenting the tests.
+Usability testing. Design, but do not conduct, a usability test.
+Deliverables:
+​​​​​​​A pdf file with the list of preferrence and performance measures and a script with relevant scenarios and tasks
+Project Delivery
+
+The final project will be structured in folders, one for each task. The project will be delivered to this Itslearning assignment in a single zip file on a group basis (no individual delivery, but one delivery per group).
+
+Please do not include links (e.g., to Github repositories).
+
+Deadline: 13 January 2025, 23:59
+
+Besvar opgave
