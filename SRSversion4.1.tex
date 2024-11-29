@@ -1,0 +1,184 @@
+\documentclass[12pt]{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{longtable}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{1em}{}
+
+\title{Software Requirements Specification (SRS) \\ \vspace{1em} \Large Intelligent Cyber Threat Intelligence System}
+\author{Group: Security Insights \\ Version: 4.1}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section*{Revision History}
+\begin{longtable}{|p{2cm}|p{3cm}|p{3cm}|p{5cm}|}
+\hline
+\textbf{Version} & \textbf{Date} & \textbf{Author(s)} & \textbf{Description} \\
+\hline
+1.0 & 2024-11-28 & Security Insights & Initial draft. Monolithic design. \\
+\hline
+2.0 & 2024-11-30 & Security Insights & Microservices architecture and multi-database integration. \\
+\hline
+3.0 & 2024-12-01 & Security Insights & Enhanced Azure deployment, CTI-specific pipelines, and dashboards. \\
+\hline
+3.1 & 2024-12-02 & Security Insights & Improved RBAC, integration with SIEM/SOAR, and compliance-focused revisions. \\
+\hline
+4.0 & 2024-12-05 & Security Insights & Comprehensive improvements for traceability, scalability, and testing strategies. \\
+\hline
+4.1 & \today & Security Insights & Focused enhancements addressing testing, risk mitigation, and practical exam preparation. \\
+\hline
+\end{longtable}
+
+\newpage
+
+\section{Introduction}
+\subsection{Purpose}
+This document specifies the requirements for developing a robust Cyber Threat Intelligence (CTI) system tailored for enterprise-grade threat detection and response. Key objectives include:
+\begin{itemize}
+    \item Real-time ingestion and analysis of threat data across diverse formats and sources.
+    \item Integration with SIEM/SOAR systems for actionable intelligence.
+    \item Role-specific dashboards catering to SOC analysts, threat hunters, executives, and auditors.
+\end{itemize}
+
+\subsection{Scope}
+The system focuses on enhancing enterprise cybersecurity by:
+\begin{itemize}
+    \item Automating ingestion and enrichment of structured, unstructured, and relational threat intelligence data.
+    \item Providing predictive analytics using data science pipelines for proactive threat mitigation.
+    \item Adhering to industry standards such as GDPR, ISO 27001, and MITRE ATT&CK.
+\end{itemize}
+
+\subsection{Document Overview}
+The SRS is structured as follows:
+\begin{enumerate}
+    \item **Introduction**: Project goals, definitions, and references.
+    \item **Overall Description**: High-level view of the system’s architecture and features.
+    \item **Specific Requirements**: Functional and non-functional requirements.
+    \item **Testing and Risk Management**: Testing strategies, traceability, and risk mitigation plans.
+    \item **System Architecture**: Details of microservices, deployment, and database design.
+    \item **Appendices**: Supporting diagrams, sample API documentation, and YAML configurations.
+\end{enumerate}
+
+\newpage
+
+\section{Overall Description}
+\subsection{Product Features}
+\begin{itemize}
+    \item **Real-time Threat Ingestion**: Automate the ingestion of 50k+ Indicators of Compromise (IOCs) daily.
+    \item **Data Enrichment**: Use MITRE ATT&CK mapping to classify tactics, techniques, and procedures (TTPs).
+    \item **Actionable Dashboards**: Role-specific insights for operational, tactical, and strategic decision-making.
+    \item **Predictive Analytics**: Detect patterns and predict threats using machine learning models.
+    \item **Compliance Monitoring**: Audit trails, GDPR-compliant pseudonymization, and ISO 27001 ISMS integration.
+\end{itemize}
+
+\subsection{Preconditions}
+\begin{itemize}
+    \item Threat feeds are accessible via authenticated APIs.
+    \item The Azure cloud environment supports scalable deployments.
+    \item End-users are trained to interpret predictive analytics and dashboard KPIs.
+\end{itemize}
+
+\subsection{Assumptions and Dependencies}
+\begin{itemize}
+    \item External APIs will maintain uptime and data quality.
+    \item The organization uses modern browsers to access dashboards.
+    \item No major disruptions in Azure cloud services.
+\end{itemize}
+
+\newpage
+
+\section{Specific Requirements}
+\subsection{Functional Requirements}
+\begin{itemize}
+    \item **FR-1**: Provide APIs for CRUD operations on relational, document, and graph databases.
+    \item **FR-2**: Ingest threat feeds from OSINT, commercial, and proprietary sources via Azure Event Hubs.
+    \item **FR-3**: Enrich threat data with MITRE ATT&CK mapping and predictive analytics.
+    \item **FR-4**: Provide role-based access control (RBAC) for different user groups.
+    \item **FR-5**: Export enriched data to SIEM/SOAR platforms in JSON format.
+\end{itemize}
+
+\subsection{Non-functional Requirements}
+\begin{itemize}
+    \item **NFR-1**: Ensure 99.99\% system uptime with automated failover mechanisms.
+    \item **NFR-2**: Support a minimum of 50k IOCs/day with 200ms API response time under load.
+    \item **NFR-3**: Ensure data encryption at rest (AES-256) and in transit (TLS 1.3).
+\end{itemize}
+
+\subsection{Testing Traceability Matrix}
+\begin{longtable}{|p{3cm}|p{4cm}|p{5cm}|}
+\hline
+\textbf{Requirement} & \textbf{Test Case ID} & \textbf{Testing Tool/Methodology} \\
+\hline
+FR-1 & TC-001 & API tests using Postman \\
+\hline
+FR-2 & TC-002 & JMeter stress testing for ingestion pipelines \\
+\hline
+FR-3 & TC-003 & Unit testing with Mockito for enrichment logic \\
+\hline
+FR-4 & TC-004 & RBAC testing using Selenium for UI workflows \\
+\hline
+FR-5 & TC-005 & API contract tests with Swagger Validator \\
+\hline
+\end{longtable}
+
+\newpage
+
+\section{Testing and Risk Management}
+\subsection{Testing Strategies}
+\begin{itemize}
+    \item **Unit Tests**: Validate individual modules (e.g., data enrichment services) using the AAA pattern.
+    \item **Integration Tests**: Test API endpoints with mock external dependencies.
+    \item **End-to-End Tests**: Use Selenium to automate dashboard workflows for SOC analysts and executives.
+    \item **Performance Tests**: Conduct load, stress, and spike testing with JMeter to simulate ingestion of 50k IOCs/day.
+\end{itemize}
+
+\subsection{Risk Assessment}
+\begin{longtable}{|p{3cm}|p{4cm}|p{4cm}|p{4cm}|}
+\hline
+\textbf{Risk} & \textbf{Impact} & \textbf{Likelihood} & \textbf{Mitigation} \\ 
+\hline
+Data Breach & Critical & Medium & Encrypt data and use Azure Key Vault for credentials. \\ 
+\hline
+API Downtime & High & High & Implement retries and caching for API calls. \\ 
+\hline
+Integration Errors & Medium & Low & Use CI pipelines with automated integration tests. \\ 
+\hline
+\end{longtable}
+
+\newpage
+
+\section{System Architecture}
+\subsection{Microservices Design}
+\begin{itemize}
+    \item **Database Services**: Separate microservices for relational (MySQL), document (MongoDB), and graph (Neo4j) databases.
+    \item **Enrichment Services**: Python-based services integrating MITRE ATT&CK and Azure Machine Learning.
+    \item **Dashboard Services**: Frontend services deployed on AKS, backed by Power BI for visualization.
+\end{itemize}
+
+\subsection{Azure Deployment}
+\begin{itemize}
+    \item **Redundancy**: Multi-region deployment for global failover.
+    \item **Monitoring**: Azure Monitor and Sentinel for observability.
+    \item **Security**: RBAC and Key Vault for sensitive configuration data.
+\end{itemize}
+
+\section{Appendices}
+\begin{itemize}
+    \item **Appendix A**: ER Diagram for MySQL.
+    \item **Appendix B**: Sample API Contract (Swagger documentation).
+    \item **Appendix C**: YAML Configuration for Kubernetes Deployment.
+    \item **Appendix D**: Mockups of SOC and Executive Dashboards.
+\end{itemize}
+
+\end{document}
