@@ -127,7 +127,7 @@ The SRS is structured as follows:
 | FR-1           | TC-001            | API tests using Postman                  |
 | FR-2           | TC-002            | JMeter stress testing for ingestion pipelines |
 | FR-3           | TC-003            | Unit testing with Mockito for enrichment logic |
-| FR-4           | TC-004            | RBAC testing using Selenium for UI workflows |
+| FR-4           | TC-004            | RBAC testing using Cypress for UI workflows |
 | FR-5           | TC-005            | API contract tests with Swagger Validator |
 
 ---
@@ -138,7 +138,7 @@ The SRS is structured as follows:
 
 - **Unit Tests**: Validate individual modules (e.g., data enrichment services) using the Arrange-Act-Assert (AAA) pattern.
 - **Integration Tests**: Test API endpoints with mock external dependencies.
-- **End-to-End Tests**: Use Selenium to automate dashboard workflows for SOC analysts and executives.
+- **End-to-End Tests**: Use Cypress to automate dashboard workflows for SOC analysts and executives.
 - **Performance Tests**: Conduct load, stress, and spike testing with JMeter to simulate ingestion of 50,000 IOCs/day.
 
 ### **Risk Assessment**
@@ -623,7 +623,7 @@ The code coverage report highlighted the areas of the code that were not suffici
 4. **Integration Tests:** Run integration tests.
 5. **Build Docker Images:** Build Docker images for microservices.
 6. **Deploy to Test Environment:** Deploy images to a test environment using Kubernetes.
-7. **End-to-End Tests:** Execute Selenium tests against the test environment.
+7. **End-to-End Tests:** Execute Cypress tests against the test environment.
 8. **Performance Tests:** Run JMeter tests for performance validation.
 9. **Notification:** Send build status notifications to the development team.
 
@@ -720,7 +720,7 @@ pipeline {
 
 # **End-to-End UI Testing**
 
-**Tool Used:** Selenium WebDriver with Java
+**Tool Used:** Cypress WebDriver with Java
 
 ## **Tests Conducted**
 
