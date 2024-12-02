@@ -175,7 +175,6 @@ The SRS is structured as follows:
 
 ```mermaid
 erDiagram
-    -- INCIDENT LOGS TABLE --
     INCIDENT_LOGS {
         bigint incident_id PK
         int actor_id FK
@@ -183,88 +182,75 @@ erDiagram
         int vulnerability_id FK
         bigint geolocation_id FK
         datetime incident_date
-        varchar(255) target
+        varchar target
         int industry_id FK
-        varchar(255) impact
-        varchar(255) response
+        varchar impact
+        varchar response
         datetime response_date
         datetime data_retention_until
         timestamp created_at
         timestamp updated_at
-        int response_time_hours GENERATED
+        int response_time_hours
     }
-
-    -- ACTORS TABLE --
     THREAT_ACTORS {
         int actor_id PK
-        varchar(255) name UNIQUE
+        varchar name UNIQUE
         int type_id FK
-        char(2) origin_country FK
+        char origin_country FK
         date first_observed
         date last_activity
         int category_id FK
         timestamp created_at
         timestamp updated_at
     }
-
-    -- ATTACK VECTORS TABLE --
     ATTACK_VECTORS {
         int vector_id PK
-        varchar(255) name UNIQUE
-        varchar(255) description
+        varchar name UNIQUE
+        varchar description
         int vector_category_id FK
         int severity_level
         timestamp created_at
         timestamp updated_at
     }
-
-    -- VULNERABILITIES TABLE --
     VULNERABILITIES {
         int vulnerability_id PK
-        varchar(20) cve_id UNIQUE
+        varchar cve_id UNIQUE
         tinytext description
         date published_date
-        decimal(4,1) severity_score CHECK
+        decimal severity_score
         timestamp created_at
         timestamp updated_at
     }
-
-    -- INDUSTRIES TABLE --
     INDUSTRIES {
         int industry_id PK
-        varchar(100) industry_name UNIQUE
+        varchar industry_name UNIQUE
         tinytext description
         timestamp created_at
         timestamp updated_at
     }
-
-    -- AFFECTED PRODUCTS TABLE --
     AFFECTED_PRODUCTS {
         int product_id PK
-        varchar(255) product_name UNIQUE
-        varchar(255) vendor
+        varchar product_name UNIQUE
+        varchar vendor
         timestamp created_at
         timestamp updated_at
     }
-
-    -- COUNTRIES TABLE --
     COUNTRIES {
-        char(2) country_code PK
-        varchar(100) country_name UNIQUE
+        char country_code PK
+        varchar country_name UNIQUE
         timestamp created_at
         timestamp updated_at
     }
 
-    -- RELATIONSHIPS --
     INCIDENT_LOGS ||--o{ THREAT_ACTORS : "actor_id"
     INCIDENT_LOGS ||--o{ ATTACK_VECTORS : "vector_id"
     INCIDENT_LOGS ||--o{ VULNERABILITIES : "vulnerability_id"
     INCIDENT_LOGS ||--o{ INDUSTRIES : "industry_id"
+    INCIDENT_LOGS ||--o{ COUNTRIES : "geolocation"
     INCIDENT_LOGS ||--o{ AFFECTED_PRODUCTS : "product_id"
-    INCIDENT_LOGS ||--o{ COUNTRIES : "origin_country"
-    ATTACK_VECTORS ||--o{ INDUSTRIES : "industry_id"
     THREAT_ACTORS ||--|| COUNTRIES : "origin_country"
-    AFFECTED_PRODUCTS ||--|| VULNERABILITIES : "vulnerability_product_association"
+    VULNERABILITIES ||--o{ AFFECTED_PRODUCTS : "affects"
+    ATTACK_VECTORS ||--o{ INDUSTRIES : "targets"
 
 ```
 
