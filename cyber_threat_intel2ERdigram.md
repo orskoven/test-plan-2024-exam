@@ -1,7 +1,6 @@
 
 ### `cyber_threat_intel2` Schema ER Diagram
 
-```markdown
 ```mermaid
 erDiagram
     affected_products {
