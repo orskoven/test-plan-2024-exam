@@ -174,7 +174,6 @@ The SRS is structured as follows:
 ### **Appendix A: ER Diagram**
 
 ```mermaid
-```mermaid
 erDiagram
     Users {
         INT user_id PK "Primary Key"
