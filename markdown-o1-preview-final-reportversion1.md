@@ -176,102 +176,104 @@ The SRS is structured as follows:
 ```mermaid
 erDiagram
     affected_products {
-        int product_id PK
-        varchar product_name UNIQUE
-        varchar vendor
-        timestamp created_at
-        timestamp updated_at
+        INT product_id PK
+        VARCHAR product_name UNIQUE
+        VARCHAR vendor
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
     }
     attack_vector_categories {
-        int vector_category_id PK
-        varchar category_name UNIQUE
-        text description
-        timestamp created_at
-        timestamp updated_at
+        INT vector_category_id PK
+        VARCHAR category_name UNIQUE
+        TEXT description
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
     }
     attack_vectors {
-        int vector_id PK
-        varchar name UNIQUE
-        int vector_category_id FK
-        varchar description
-        int severity_level
-        timestamp created_at
-        timestamp updated_at
+        INT vector_id PK
+        VARCHAR name UNIQUE
+        INT vector_category_id FK
+        VARCHAR description
+        INT severity_level
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
     }
     countries {
-        char(2) country_code PK
-        varchar country_name UNIQUE
-        timestamp created_at
-        timestamp updated_at
+        CHAR country_code PK
+        VARCHAR country_name UNIQUE
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
     }
     geolocations {
-        int geolocation_id PK
-        varchar ip_address UNIQUE
-        char(2) country FK
-        varchar region
-        varchar city
-        decimal latitude
-        decimal longitude
-        timestamp created_at
-        timestamp updated_at
+        INT geolocation_id PK
+        VARCHAR ip_address UNIQUE
+        CHAR country FK
+        VARCHAR region
+        VARCHAR city
+        DECIMAL latitude
+        DECIMAL longitude
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
     }
     global_threats {
-        int threat_id PK
-        varchar name UNIQUE
-        varchar description
-        date first_detected
-        int severity_level
-        date last_updated
-        timestamp created_at
-        timestamp updated_at
+        INT threat_id PK
+        VARCHAR name UNIQUE
+        VARCHAR description
+        DATE first_detected
+        INT severity_level
+        DATE last_updated
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
     }
     incident_logs {
-        bigint incident_id PK
-        int actor_id FK
-        int vector_id FK
-        bigint geolocation_id FK
-        datetime incident_date
-        varchar target
-        int industry_id FK
-        varchar impact
-        varchar response
-        datetime response_date
-        timestamp created_at
-        timestamp updated_at
+        BIGINT incident_id PK
+        INT actor_id FK
+        INT vector_id FK
+        BIGINT geolocation_id FK
+        DATETIME incident_date
+        VARCHAR target
+        INT industry_id FK
+        VARCHAR impact
+        VARCHAR response
+        DATETIME response_date
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
     }
     industries {
-        int industry_id PK
-        varchar industry_name UNIQUE
-        text description
-        timestamp created_at
-        timestamp updated_at
+        INT industry_id PK
+        VARCHAR industry_name UNIQUE
+        TEXT description
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
     }
     machine_learning_features {
-        bigint feature_id PK
-        bigint incident_id FK
-        json feature_vector
-        varchar feature_name
-        double feature_value
-        timestamp created_at
+        BIGINT feature_id PK
+        BIGINT incident_id FK
+        JSON feature_vector
+        VARCHAR feature_name
+        DOUBLE feature_value
+        TIMESTAMP created_at
     }
     vulnerabilities {
-        int vulnerability_id PK
-        varchar cve_id UNIQUE
-        text description
-        date published_date
-        decimal severity_score
-        timestamp created_at
-        timestamp updated_at
+        INT vulnerability_id PK
+        VARCHAR cve_id UNIQUE
+        TEXT description
+        DATE published_date
+        DECIMAL severity_score
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
     }
 
-    affected_products ||--|| vulnerabilities : "is affected by"
-    vulnerabilities ||--|| attack_vectors : "is exploited by"
-    attack_vectors ||--|| attack_vector_categories : "categorized in"
-    countries ||--|| geolocations : "located in"
-    global_threats ||--|| vulnerabilities : "caused by"
-    industries ||--|| incident_logs : "impacts"
-    incident_logs ||--|| geolocations : "occurred at"
-    incident_logs ||--|| machine_learning_features : "analyzed for"
+    affected_products ||--o{ vulnerabilities : "is affected by"
+    vulnerabilities ||--o{ attack_vectors : "is exploited by"
+    attack_vectors ||--o{ attack_vector_categories : "belongs to"
+    countries ||--o{ geolocations : "contains"
+    global_threats ||--o{ vulnerabilities : "includes"
+    industries ||--o{ incident_logs : "impacts"
+    incident_logs ||--o{ geolocations : "located at"
+
+    incident_logs ||--o{ machine_learning_features : "analyzed with"
+
 
 ### **Appendix B: API Contract**
 
