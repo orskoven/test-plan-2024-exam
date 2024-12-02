@@ -175,23 +175,96 @@ The SRS is structured as follows:
 
 ```mermaid
 erDiagram
-    CUSTOMER {
-        id int
-        name string
-        email string
+    -- INCIDENT LOGS TABLE --
+    INCIDENT_LOGS {
+        bigint incident_id PK
+        int actor_id FK
+        int vector_id FK
+        int vulnerability_id FK
+        bigint geolocation_id FK
+        datetime incident_date
+        varchar(255) target
+        int industry_id FK
+        varchar(255) impact
+        varchar(255) response
+        datetime response_date
+        datetime data_retention_until
+        timestamp created_at
+        timestamp updated_at
+        int response_time_hours GENERATED
     }
-    ORDER {
-        id int
-        order_date date
-        status string
+
+    -- ACTORS TABLE --
+    THREAT_ACTORS {
+        int actor_id PK
+        varchar(255) name UNIQUE
+        int type_id FK
+        char(2) origin_country FK
+        date first_observed
+        date last_activity
+        int category_id FK
+        timestamp created_at
+        timestamp updated_at
     }
-    PRODUCT {
-        id int
-        name string
-        price float
+
+    -- ATTACK VECTORS TABLE --
+    ATTACK_VECTORS {
+        int vector_id PK
+        varchar(255) name UNIQUE
+        varchar(255) description
+        int vector_category_id FK
+        int severity_level
+        timestamp created_at
+        timestamp updated_at
     }
-    CUSTOMER ||--o{ ORDER : "places"
-    ORDER ||--o{ PRODUCT : "contains"
+
+    -- VULNERABILITIES TABLE --
+    VULNERABILITIES {
+        int vulnerability_id PK
+        varchar(20) cve_id UNIQUE
+        tinytext description
+        date published_date
+        decimal(4,1) severity_score CHECK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    -- INDUSTRIES TABLE --
+    INDUSTRIES {
+        int industry_id PK
+        varchar(100) industry_name UNIQUE
+        tinytext description
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    -- AFFECTED PRODUCTS TABLE --
+    AFFECTED_PRODUCTS {
+        int product_id PK
+        varchar(255) product_name UNIQUE
+        varchar(255) vendor
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    -- COUNTRIES TABLE --
+    COUNTRIES {
+        char(2) country_code PK
+        varchar(100) country_name UNIQUE
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    -- RELATIONSHIPS --
+    INCIDENT_LOGS ||--o{ THREAT_ACTORS : "actor_id"
+    INCIDENT_LOGS ||--o{ ATTACK_VECTORS : "vector_id"
+    INCIDENT_LOGS ||--o{ VULNERABILITIES : "vulnerability_id"
+    INCIDENT_LOGS ||--o{ INDUSTRIES : "industry_id"
+    INCIDENT_LOGS ||--o{ AFFECTED_PRODUCTS : "product_id"
+    INCIDENT_LOGS ||--o{ COUNTRIES : "origin_country"
+    ATTACK_VECTORS ||--o{ INDUSTRIES : "industry_id"
+    THREAT_ACTORS ||--|| COUNTRIES : "origin_country"
+    AFFECTED_PRODUCTS ||--|| VULNERABILITIES : "vulnerability_product_association"
 
 ```
 
