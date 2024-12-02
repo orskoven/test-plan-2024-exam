@@ -193,7 +193,7 @@ erDiagram
         INT vector_id PK
         VARCHAR name UNIQUE
         INT vector_category_id FK
-        VARCHAR description
+        TEXT description
         INT severity_level
         TIMESTAMP created_at
         TIMESTAMP updated_at
@@ -207,7 +207,7 @@ erDiagram
     GEOLOCATIONS {
         INT geolocation_id PK
         VARCHAR ip_address UNIQUE
-        CHAR(2) country FK
+        CHAR(2) country_code FK
         VARCHAR region
         VARCHAR city
         DECIMAL latitude
@@ -218,7 +218,7 @@ erDiagram
     GLOBAL_THREATS {
         INT threat_id PK
         VARCHAR name UNIQUE
-        VARCHAR description
+        TEXT description
         DATE first_detected
         INT severity_level
         DATE last_updated
@@ -233,8 +233,8 @@ erDiagram
         DATETIME incident_date
         VARCHAR target
         INT industry_id FK
-        VARCHAR impact
-        VARCHAR response
+        TEXT impact
+        TEXT response
         DATETIME response_date
         TIMESTAMP created_at
         TIMESTAMP updated_at
@@ -279,13 +279,13 @@ erDiagram
 
     AFFECTED_PRODUCTS ||--o{ VULNERABILITIES : "is affected by"
     VULNERABILITIES ||--o{ ATTACK_VECTORS : "is exploited by"
-    ATTACK_VECTORS }|--|| ATTACK_VECTOR_CATEGORIES : "belongs to"
+    ATTACK_VECTORS }o--|| ATTACK_VECTOR_CATEGORIES : "belongs to"
     COUNTRIES ||--o{ GEOLOCATIONS : "contains"
     GLOBAL_THREATS ||--o{ VULNERABILITIES : "includes"
     INDUSTRIES ||--o{ INCIDENT_LOGS : "impacts"
     INCIDENT_LOGS ||--o{ GEOLOCATIONS : "occurred at"
     INCIDENT_LOGS ||--o{ MACHINE_LEARNING_FEATURES : "analyzed with"
-    ACTORS }|--|| ACTOR_TYPES : "classified as"
+    ACTORS }o--|| ACTOR_TYPES : "classified as"
     ACTORS ||--o{ INCIDENT_LOGS : "involved in"
 
 ```
