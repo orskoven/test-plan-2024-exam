@@ -174,18 +174,119 @@ The SRS is structured as follows:
 ### **Appendix A: ER Diagram**
 
 ```mermaid
+erDiagram
+    AFFECTED_PRODUCTS {
+        INT product_id PK
+        VARCHAR product_name UNIQUE
+        VARCHAR vendor
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+    ATTACK_VECTOR_CATEGORIES {
+        INT vector_category_id PK
+        VARCHAR category_name UNIQUE
+        TEXT description
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+    ATTACK_VECTORS {
+        INT vector_id PK
+        VARCHAR name UNIQUE
+        INT vector_category_id FK
+        VARCHAR description
+        INT severity_level
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+    COUNTRIES {
+        CHAR(2) country_code PK
+        VARCHAR country_name UNIQUE
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+    GEOLOCATIONS {
+        INT geolocation_id PK
+        VARCHAR ip_address UNIQUE
+        CHAR(2) country FK
+        VARCHAR region
+        VARCHAR city
+        DECIMAL latitude
+        DECIMAL longitude
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+    GLOBAL_THREATS {
+        INT threat_id PK
+        VARCHAR name UNIQUE
+        VARCHAR description
+        DATE first_detected
+        INT severity_level
+        DATE last_updated
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+    INCIDENT_LOGS {
+        BIGINT incident_id PK
+        INT actor_id FK
+        INT vector_id FK
+        INT geolocation_id FK
+        DATETIME incident_date
+        VARCHAR target
+        INT industry_id FK
+        VARCHAR impact
+        VARCHAR response
+        DATETIME response_date
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+    INDUSTRIES {
+        INT industry_id PK
+        VARCHAR industry_name UNIQUE
+        TEXT description
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+    MACHINE_LEARNING_FEATURES {
+        BIGINT feature_id PK
+        BIGINT incident_id FK
+        JSON feature_vector
+        VARCHAR feature_name
+        DOUBLE feature_value
+        TIMESTAMP created_at
+    }
+    VULNERABILITIES {
+        INT vulnerability_id PK
+        VARCHAR cve_id UNIQUE
+        TEXT description
+        DATE published_date
+        DECIMAL severity_score
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+    ACTORS {
+        INT actor_id PK
+        VARCHAR actor_name UNIQUE
+        INT actor_type_id FK
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+    ACTOR_TYPES {
+        INT actor_type_id PK
+        VARCHAR type_name UNIQUE
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
 
-    affected_products ||--o{ vulnerabilities : "is affected by"
-    vulnerabilities ||--o{ attack_vectors : "is exploited by"
-    attack_vectors }|--|| attack_vector_categories : "belongs to"
-    countries ||--o{ geolocations : "contains"
-    global_threats ||--o{ vulnerabilities : "includes"
-    industries ||--o{ incident_logs : "impacts"
-    incident_logs ||--o{ geolocations : "occurred at"
-    incident_logs ||--o{ machine_learning_features : "analyzed with"
-    actors }|--|| actor_types : "classified as"
-    actors ||--o{ incident_logs : "involved in"
-
+    AFFECTED_PRODUCTS ||--o{ VULNERABILITIES : "is affected by"
+    VULNERABILITIES ||--o{ ATTACK_VECTORS : "is exploited by"
+    ATTACK_VECTORS }|--|| ATTACK_VECTOR_CATEGORIES : "belongs to"
+    COUNTRIES ||--o{ GEOLOCATIONS : "contains"
+    GLOBAL_THREATS ||--o{ VULNERABILITIES : "includes"
+    INDUSTRIES ||--o{ INCIDENT_LOGS : "impacts"
+    INCIDENT_LOGS ||--o{ GEOLOCATIONS : "occurred at"
+    INCIDENT_LOGS ||--o{ MACHINE_LEARNING_FEATURES : "analyzed with"
+    ACTORS }|--|| ACTOR_TYPES : "classified as"
+    ACTORS ||--o{ INCIDENT_LOGS : "involved in"
 
 ```
 
