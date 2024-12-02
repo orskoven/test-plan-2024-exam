@@ -1,16 +1,9 @@
-Certainly! Below is **Appendix D: Dashboard Mockups**, showcasing mockups for both **Security Operations Center (SOC)** and **Executive** dashboards. These mockups are designed using **Mermaid** diagrams within Markdown to illustrate the layout and key components. Additionally, I've incorporated **ASCII art** and **tables** where appropriate to enhance clarity and visualization.
+Certainly! Below is Appendix D: Dashboard Mockups, showcasing mockups for both Security Operations Center (SOC) and Executive dashboards. These mockups are designed using Mermaid diagrams within Markdown to illustrate the layout and key components. Additionally, I've incorporated ASCII art and tables where appropriate to enhance clarity and visualization.
+Appendix D: Dashboard Mockups
 
----
-
-## Appendix D: Dashboard Mockups
-
-### 1. Security Operations Center (SOC) Dashboard
-
+1. Security Operations Center (SOC) Dashboard
 The SOC Dashboard is tailored for security analysts and operational teams, providing real-time insights, alerts, and detailed metrics to monitor and respond to security threats effectively.
-
-#### **Mermaid Diagram: SOC Dashboard Layout**
-
-```markdown
+Mermaid Diagram: SOC Dashboard Layout
 ```mermaid
 graph TD
     subgraph Header
@@ -57,8 +50,6 @@ graph TD
 
     classDef footerStyle fill:#AED6F1,stroke:#333,stroke-width:2px;
     class Footer footerStyle;
-```
-```
 
 #### **Mockup Description**
 
@@ -146,8 +137,6 @@ graph TD
 
     classDef footerStyle fill:#A9CCE3,stroke:#333,stroke-width:2px;
     class Footer footerStyle;
-```
-```
 
 #### **Mockup Description**
 
@@ -187,17 +176,7 @@ While Mermaid provides a structured way to represent dashboard layouts, incorpor
 
 #### **ASCII Art: Threat Map Widget (SOC Dashboard)**
 
-```
-+---------------------------+
-|        Threat Map         |
-|                           |
-|   [●] Location A          |
-|   [●] Location B          |
-|   [●] Location C          |
-|                           |
-|   [Zoom In] [Zoom Out]    |
-+---------------------------+
-```
++---------------------------+ | Threat Map | | | | [●] Location A | | [●] Location B | | [●] Location C | | | | [Zoom In] [Zoom Out] | +---------------------------+
 
 #### **Table: Key Metrics (SOC Dashboard)**
 
@@ -218,8 +197,6 @@ pie
     "HIPAA" : 30
     "PCI-DSS" : 20
     "Other" : 10
-```
-```
 
 #### **Mermaid Bar Chart: Incident Trends (Executive Dashboard)**
 
@@ -235,8 +212,6 @@ bar
         data: [5, 7, 3, 6, 4, 8]
         name: "2024"
         data: [6, 9, 4, 7, 5, 10]
-```
-```
 
 ---
 
@@ -269,3 +244,8 @@ To visualize these dashboard mockups:
 - **User Feedback:** Incorporate feedback from end-users (SOC analysts and executives) to refine and optimize the dashboard layouts and functionalities.
 
 Feel free to customize and expand upon these mockups to suit your specific requirements and organizational needs.
+
+
+
+
+
