@@ -229,7 +229,7 @@ erDiagram
         BIGINT incident_id PK
         INT actor_id FK
         INT vector_id FK
-        BIGINT geolocation_id FK
+        INT geolocation_id FK
         DATETIME incident_date
         VARCHAR target
         INT industry_id FK
@@ -286,7 +286,8 @@ erDiagram
     incident_logs ||--o{ geolocations : "occurred at"
     incident_logs ||--o{ machine_learning_features : "analyzed with"
     actors }|--|| actor_types : "classified as"
-    incident_logs }|--|| actors : "involves"
+    actors ||--o{ incident_logs : "involved in"
+
 
 ```
 
