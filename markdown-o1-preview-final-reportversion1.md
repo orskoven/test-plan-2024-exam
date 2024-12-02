@@ -273,7 +273,7 @@ erDiagram
     incident_logs ||--o{ geolocations : "located at"
 
     incident_logs ||--o{ machine_learning_features : "analyzed with"
-
+```
 
 ### **Appendix B: API Contract**
 
