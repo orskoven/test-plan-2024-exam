@@ -173,7 +173,105 @@ The SRS is structured as follows:
 
 ### **Appendix A: ER Diagram**
 
-*(Insert ER Diagram for MySQL database)*
+```mermaid
+erDiagram
+    affected_products {
+        int product_id PK
+        varchar product_name UNIQUE
+        varchar vendor
+        timestamp created_at
+        timestamp updated_at
+    }
+    attack_vector_categories {
+        int vector_category_id PK
+        varchar category_name UNIQUE
+        text description
+        timestamp created_at
+        timestamp updated_at
+    }
+    attack_vectors {
+        int vector_id PK
+        varchar name UNIQUE
+        int vector_category_id FK
+        varchar description
+        int severity_level
+        timestamp created_at
+        timestamp updated_at
+    }
+    countries {
+        char(2) country_code PK
+        varchar country_name UNIQUE
+        timestamp created_at
+        timestamp updated_at
+    }
+    geolocations {
+        int geolocation_id PK
+        varchar ip_address UNIQUE
+        char(2) country FK
+        varchar region
+        varchar city
+        decimal latitude
+        decimal longitude
+        timestamp created_at
+        timestamp updated_at
+    }
+    global_threats {
+        int threat_id PK
+        varchar name UNIQUE
+        varchar description
+        date first_detected
+        int severity_level
+        date last_updated
+        timestamp created_at
+        timestamp updated_at
+    }
+    incident_logs {
+        bigint incident_id PK
+        int actor_id FK
+        int vector_id FK
+        bigint geolocation_id FK
+        datetime incident_date
+        varchar target
+        int industry_id FK
+        varchar impact
+        varchar response
+        datetime response_date
+        timestamp created_at
+        timestamp updated_at
+    }
+    industries {
+        int industry_id PK
+        varchar industry_name UNIQUE
+        text description
+        timestamp created_at
+        timestamp updated_at
+    }
+    machine_learning_features {
+        bigint feature_id PK
+        bigint incident_id FK
+        json feature_vector
+        varchar feature_name
+        double feature_value
+        timestamp created_at
+    }
+    vulnerabilities {
+        int vulnerability_id PK
+        varchar cve_id UNIQUE
+        text description
+        date published_date
+        decimal severity_score
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    affected_products ||--|| vulnerabilities : "is affected by"
+    vulnerabilities ||--|| attack_vectors : "is exploited by"
+    attack_vectors ||--|| attack_vector_categories : "categorized in"
+    countries ||--|| geolocations : "located in"
+    global_threats ||--|| vulnerabilities : "caused by"
+    industries ||--|| incident_logs : "impacts"
+    incident_logs ||--|| geolocations : "occurred at"
+    incident_logs ||--|| machine_learning_features : "analyzed for"
 
 ### **Appendix B: API Contract**
 
