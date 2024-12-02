@@ -199,7 +199,7 @@ erDiagram
         TIMESTAMP updated_at
     }
     countries {
-        CHAR country_code PK
+        CHAR(2) country_code PK
         VARCHAR country_name UNIQUE
         TIMESTAMP created_at
         TIMESTAMP updated_at
@@ -207,7 +207,7 @@ erDiagram
     geolocations {
         INT geolocation_id PK
         VARCHAR ip_address UNIQUE
-        CHAR country FK
+        CHAR(2) country FK
         VARCHAR region
         VARCHAR city
         DECIMAL latitude
@@ -263,16 +263,31 @@ erDiagram
         TIMESTAMP created_at
         TIMESTAMP updated_at
     }
+    actors {
+        INT actor_id PK
+        VARCHAR actor_name UNIQUE
+        INT actor_type_id FK
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+    actor_types {
+        INT actor_type_id PK
+        VARCHAR type_name UNIQUE
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
 
     affected_products ||--o{ vulnerabilities : "is affected by"
     vulnerabilities ||--o{ attack_vectors : "is exploited by"
-    attack_vectors ||--o{ attack_vector_categories : "belongs to"
+    attack_vectors }|--|| attack_vector_categories : "belongs to"
     countries ||--o{ geolocations : "contains"
     global_threats ||--o{ vulnerabilities : "includes"
     industries ||--o{ incident_logs : "impacts"
-    incident_logs ||--o{ geolocations : "located at"
-
+    incident_logs ||--o{ geolocations : "occurred at"
     incident_logs ||--o{ machine_learning_features : "analyzed with"
+    actors }|--|| actor_types : "classified as"
+    incident_logs }|--|| actors : "involves"
+
 ```
 
 ### **Appendix B: API Contract**
