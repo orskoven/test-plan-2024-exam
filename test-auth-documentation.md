@@ -1,3 +1,143 @@
+_______________________________UPDATE
+This error contains two critical issues that need to be addressed:
+
+Issue 1: Bcrypt AttributeError
+
+Error: module 'bcrypt' has no attribute '__about__'
+
+Root Cause
+
+This occurs due to incompatibility between the bcrypt package and the passlib library. Specifically, an older or incompatible version of bcrypt is being used, and passlib attempts to access the __about__ attribute, which does not exist in this version.
+
+Solution
+
+Upgrade the bcrypt package to the latest compatible version:
+	1.	Check your current bcrypt version:
+
+pip show bcrypt
+
+
+	2.	Upgrade to the latest version:
+
+pip install --upgrade bcrypt
+
+
+	3.	Ensure passlib is compatible with the latest bcrypt version:
+
+pip install --upgrade passlib
+
+
+	4.	Verify installation:
+
+pip list | grep bcrypt
+pip list | grep passlib
+
+Issue 2: Missing verification_token Attribute
+
+Error: 'User' object has no attribute 'verification_token'
+
+Root Cause
+
+The verification_token is referenced in the register_user function, but it is missing in the User model or not generated during user creation.
+
+Solution
+
+	1.	Add verification_token to the User Model:
+Modify the User model to include a verification_token field:
+
+from sqlalchemy import String, Column
+from uuid import uuid4
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, nullable=False)
+    email = Column(String, unique=True, nullable=False)
+    password = Column(String, nullable=False)
+    consent_to_data_usage = Column(Boolean, nullable=False, default=False)
+    enabled = Column(Boolean, default=True)
+    verification_token = Column(String, default=lambda: str(uuid4()), nullable=False)
+
+    roles = relationship("Role", secondary="user_roles", back_populates="users")
+
+
+	2.	Generate the Token in crud.create_user:
+Update the create_user function to handle the verification_token field:
+
+from uuid import uuid4
+
+def create_user(db, user):
+    hashed_password = pwd_context.hash(user.password)
+    db_user = User(
+        username=user.username,
+        email=user.email,
+        password=hashed_password,
+        consent_to_data_usage=user.consent_to_data_usage,
+        enabled=True,
+        verification_token=str(uuid4()),
+    )
+    user_role = db.query(Role).filter(Role.name == "ROLE_USER").first()
+    if user_role:
+        db_user.roles.append(user_role)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+	3.	Database Migration:
+Generate and apply a migration to include the new field:
+
+alembic revision --autogenerate -m "Add verification_token to User model"
+alembic upgrade head
+
+
+	4.	Update References in register_user:
+Ensure the verification_token is correctly passed to the send_email_verification function.
+
+Testing and Validation
+
+Steps
+
+	1.	Rebuild and Start the Application:
+
+docker-compose down
+docker-compose up --build
+
+
+	2.	Functional Test:
+Test the /register endpoint with valid and invalid data:
+
+curl -X POST "http://localhost:8000/register" \
+-H "Content-Type: application/json" \
+-d '{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "Strong@1234",
+    "consent_to_data_usage": true
+}'
+
+
+	3.	Verify Token Generation:
+Confirm the verification_token is stored in the database:
+
+SELECT username, email, verification_token FROM users WHERE email='test@example.com';
+
+Final Steps
+
+	•	Ensure Logs Capture Details:
+Update logging configurations to provide meaningful output during errors:
+
+logger.error(f"Unexpected error during user registration: {e}", exc_info=True)
+
+
+	•	Monitor Response Status:
+Test endpoints under various scenarios to ensure all edge cases are handled gracefully.
+
+By implementing these fixes and validations, the issues should be resolved, and the application will function correctly without 500 Internal Server Error.
+
+
+
 _________________________________UPDATE ________________________________________
 Documentation: Enhancements and Error Resolution for register_user Endpoint
 
