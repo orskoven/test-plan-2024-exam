@@ -1,3 +1,185 @@
+PLAN_______________________________________________________
+
+Plan for Next Iteration: Verification Token Integration
+
+Current Status
+
+	•	Successfully created a new user via the /register endpoint.
+	•	Issue: Missing verification_token field in the User model and its corresponding logic for user email verification.
+	•	Error encountered: "detail": "An internal server error occurred. Please try again later."
+
+Objectives for Next Iteration
+
+	1.	Database Enhancements
+	•	Add a verification_token field to the User table.
+	•	Ensure this field is automatically populated with a unique value during user creation.
+	•	Implement necessary database migrations.
+	2.	API Enhancements
+	•	Modify the /register endpoint to include logic for generating and storing the verification_token.
+	•	Add a new endpoint /verify-email to handle email verification using the token.
+	3.	Background Email Logic
+	•	Ensure email verification messages are sent asynchronously to the user upon successful registration.
+	•	Include the verification token in the email body or link.
+	4.	Error Handling
+	•	Enhance error handling to provide clear and actionable feedback during registration and verification.
+
+Detailed Plan
+
+1. Database Enhancements
+
+Add verification_token Field
+
+Update the User model:
+
+from sqlalchemy import String, Column
+from uuid import uuid4
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, nullable=False)
+    email = Column(String, unique=True, nullable=False)
+    password = Column(String, nullable=False)
+    consent_to_data_usage = Column(Boolean, nullable=False, default=False)
+    enabled = Column(Boolean, default=True)
+    verification_token = Column(String, default=lambda: str(uuid4()), nullable=False)
+
+    roles = relationship("Role", secondary="user_roles", back_populates="users")
+
+Generate Migration
+
+Use Alembic to create and apply a migration:
+
+alembic revision --autogenerate -m "Add verification_token to User model"
+alembic upgrade head
+
+2. API Enhancements
+
+Update /register Endpoint
+
+Enhance the logic to include verification_token generation and handling:
+
+@router.post("/register", response_model=schemas.UserOut, tags=["Authentication"])
+async def register_user(
+    user: schemas.UserCreate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    try:
+        if crud.get_user_by_username(db, username=user.username):
+            raise HTTPException(status_code=400, detail="Username already registered")
+        if crud.get_user_by_email(db, email=user.email):
+            raise HTTPException(status_code=400, detail="Email already registered")
+        if not validate_password_strength(user.password):
+            raise HTTPException(status_code=400, detail="Password does not meet strength requirements")
+
+        new_user = crud.create_user(db=db, user=user)
+        background_tasks.add_task(
+            send_email_verification, new_user.email, new_user.verification_token
+        )
+        return new_user
+
+    except Exception as e:
+        logger.error(f"Unexpected error during user registration: {e}")
+        raise HTTPException(
+            status_code=500, detail="An internal server error occurred. Please try again later."
+        )
+
+New /verify-email Endpoint
+
+Add an endpoint to verify email using the token:
+
+@router.post("/verify-email", tags=["Authentication"])
+async def verify_email(token: str, db: Session = Depends(get_db)):
+    try:
+        user = crud.get_user_by_verification_token(db, token)
+        if not user:
+            raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+        user.enabled = True
+        user.verification_token = None
+        db.commit()
+        return {"message": "Email successfully verified"}
+
+    except Exception as e:
+        logger.error(f"Unexpected error during email verification: {e}")
+        raise HTTPException(
+            status_code=500, detail="An internal server error occurred. Please try again later."
+        )
+
+3. Background Email Logic
+
+Update send_email_verification Utility
+
+Modify the function to include the verification link:
+
+from fastapi_mail import FastMail, MessageSchema
+
+async def send_email_verification(email: str, token: str):
+    verification_link = f"http://localhost:8000/verify-email?token={token}"
+    message = MessageSchema(
+        subject="Email Verification",
+        recipients=[email],
+        body=f"Please verify your email by clicking the following link: {verification_link}",
+        subtype="html",
+    )
+    fm = FastMail()
+    await fm.send_message(message)
+
+4. Error Handling Improvements
+
+	•	Registration Errors:
+	•	Return clear and specific error messages for issues like duplicate usernames or weak passwords.
+	•	Log all exceptions for debugging purposes.
+	•	Email Verification Errors:
+	•	Provide meaningful feedback for expired or invalid tokens.
+	•	Log attempts to use expired tokens for auditing.
+
+Testing Plan
+
+Test Cases
+
+User Registration
+
+	1.	Valid Registration:
+	•	Input: Valid username, email, strong password.
+	•	Expected Result: User is created, email is sent with verification token.
+	2.	Duplicate Email:
+	•	Input: Existing email in the system.
+	•	Expected Result: HTTP 400 error with Email already registered.
+	3.	Weak Password:
+	•	Input: Password failing strength validation.
+	•	Expected Result: HTTP 400 error with Password does not meet strength requirements.
+
+Email Verification
+
+	1.	Valid Token:
+	•	Input: Valid token from the email.
+	•	Expected Result: User account is enabled.
+	2.	Invalid Token:
+	•	Input: Random or expired token.
+	•	Expected Result: HTTP 400 error with Invalid or expired token.
+
+Automated Tests
+
+	•	Add unit and integration tests for verification_token logic using pytest.
+	•	Simulate email delivery using mock services.
+
+Timeline
+
+Task	Owner	Estimated Completion
+Update User model and migrations	Developer A	1 day
+Enhance /register endpoint	Developer B	1 day
+Implement /verify-email endpoint	Developer B	1 day
+Update email utility logic	Developer C	1 day
+Test cases and validation	QA Team	2 days
+
+Conclusion
+
+The next iteration focuses on implementing the verification_token logic to enhance the email verification process. This improvement ensures users are required to verify their email before activating their accounts, aligning with best practices for secure user registration.
+
+
+
 _______________________________UPDATE
 This error contains two critical issues that need to be addressed:
 
