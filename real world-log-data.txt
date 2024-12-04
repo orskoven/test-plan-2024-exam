@@ -1,0 +1,42 @@
+ 15:22:38   File "/usr/local/lib/python3.9/site-packages/starlette/routing.py", line 76, in app
+2024-12-04 15:22:38     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+2024-12-04 15:22:38   File "/usr/local/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+2024-12-04 15:22:38     raise exc
+2024-12-04 15:22:38   File "/usr/local/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+2024-12-04 15:22:38     await app(scope, receive, sender)
+2024-12-04 15:22:38   File "/usr/local/lib/python3.9/site-packages/starlette/routing.py", line 73, in app
+2024-12-04 15:22:38     response = await f(request)
+2024-12-04 15:22:38   File "/usr/local/lib/python3.9/site-packages/fastapi/routing.py", line 301, in app
+2024-12-04 15:22:38     raw_response = await run_endpoint_function(
+2024-12-04 15:22:38   File "/usr/local/lib/python3.9/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+2024-12-04 15:22:38     return await dependant.call(**values)
+2024-12-04 15:22:38   File "/app/app/routers/auth.py", line 73, in register_user
+2024-12-04 15:22:38     if crud.get_user_by_email(db, email=user.email):
+2024-12-04 15:22:38 AttributeError: module 'app.crud' has no attribute 'get_user_by_email'Creating docker-compose.yml...
+./setup.sh: line 86: fortune10_cyber_threat_intel/docker/docker-compose.yml: No such file or directory
+(base) simonbeckmann@MacBookPro tv3 % curl -X POST "http://localhost:8000/login" \
+-H "Content-Type: application/x-www-form-urlencoded" \
+--data "username=testuser&password=Valid@1234"
+Internal Server Error%                                                                                                                                                                                                                   (base) simonbeckmann@MacBookPro tv3 % curl -X POST "http://localhost:8000/login" \
+-H "Content-Type: application/x-www-form-urlencoded" \
+--data "username=testuser&password=Valid@1234"
+Internal Server Error%                                                                                                                                                                                                                   (base) simonbeckmann@MacBookPro tv3 % curl -X POST "http://localhost:8000/login" \
+-H "Content-Type: application/x-www-form-urlencoded" \
+--data "username=testuser&password=Valid@1234"
+Internal Server Error%                                                                                                                                                                                                                   (base) simonbeckmann@MacBookPro tv3 % curl -X POST "http://localhost:8000/register" \
+-H "Content-Type: application/json" \
+-d '{
+  "username": "newuser",
+  "email": "user@example.com",
+  "password": "Strong@1234"
+}'
+{"detail":[{"type":"missing","loc":["body","consent_to_data_usage"],"msg":"Field required","input":{"username":"newuser","email":"user@example.com","password":"Strong@1234"}}]}%                                                        (base) simonbeckmann@MacBookPro tv3 % curl -X 'POST' \
+  'http://localhost:8000/register' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "username": "newuser",
+  "email": "user@example.com",
+  "password": "Strong@1234",
+  "consent_to_data_usage": true
+}'
+Internal Server Error%                                                                                                                                                                                                                   (base) simonbeckmann@MacBookPro tv3 % 
