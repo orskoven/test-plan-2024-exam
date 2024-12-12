@@ -26,6 +26,8 @@ Test Cases
 
 Below is the table of test cases designed using the above techniques:
 
+```mermaid
+
 flowchart TD
     A[Test Case ID] --> B[Description]
     A --> C[Input Data]
@@ -38,7 +40,7 @@ flowchart TD
     B --> J[TC05: Password below length]
     B --> K[TC06: Correct email, invalid password]
     B --> L[TC07: SQL injection in email]
-
+```
 Test Case ID	Description	Input Data	Expected Result	Technique
 TC01	Valid email and password	Email: user@example.comPassword: ValidPass123	Successful login; user navigated to the dashboard.	EP, BVA
 TC02	Invalid email format	Email: userexample.comPassword: ValidPass123	Error message: “Enter a valid email.”	EP
