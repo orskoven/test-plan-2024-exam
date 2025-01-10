@@ -1,0 +1,2873 @@
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/boundaryValueTest/BoundaryValueTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/BoundaryValueTest.java
+package orsk.authmodule.boundaryValueTest;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.SpringBootMockMvcBuilderCustomizer;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class BoundaryValueTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    @DisplayName("Register User with Username Length Boundary")
+    public void testRegisterUser_UsernameBoundary() throws Exception {
+        // Minimum boundary
+        String minUsername = "usr";
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"" + minUsername + "\",\"email\":\"minboundary@example.com\",\"password\":\"StrongPassword@123\",\"consentToDataUsage\":true}"))
+                .andExpect(status().isCreated());
+
+        // Maximum boundary
+        String maxUsername = "u".repeat(50);
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"" + maxUsername + "\",\"email\":\"maxboundary@example.com\",\"password\":\"StrongPassword@123\",\"consentToDataUsage\":true}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("Register User with Password Length Boundary")
+    public void testRegisterUser_PasswordBoundary() throws Exception {
+        // Minimum boundary (12 characters)
+        String minPassword = "A1a!A1a!A1a!";
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"boundaryUser1\",\"email\":\"boundary1@example.com\",\"password\":\"" + minPassword + "\",\"consentToDataUsage\":true}"))
+                .andExpect(status().isCreated());
+
+        // Below minimum boundary
+        String shortPassword = "A1a!A1a!A1";
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"boundaryUser2\",\"email\":\"boundary2@example.com\",\"password\":\"" + shortPassword + "\",\"consentToDataUsage\":true}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.validationErrors").exists());
+    }
+
+    @Test
+    @DisplayName("Boundary Test: Username Length")
+    public void testUsernameLengthBoundary() throws Exception {
+        String minUsername = "usr";
+        String maxUsername = "u".repeat(50);
+
+        // Minimum boundary test
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"" + minUsername + "\",\"email\":\"min@example.com\",\"password\":\"Password@123\",\"consentToDataUsage\":true}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("User registered successfully"));
+
+        // Maximum boundary test
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"" + maxUsername + "\",\"email\":\"max@example.com\",\"password\":\"Password@123\",\"consentToDataUsage\":true}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("User registered successfully"));
+
+        // Above maximum boundary
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"" + maxUsername + "x\",\"email\":\"over@example.com\",\"password\":\"Password@123\",\"consentToDataUsage\":true}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.validationErrors.username").value("Username must not exceed 50 characters"));
+    }
+
+    @Test
+    @DisplayName("Boundary Test: Password Strength")
+    public void testPasswordStrengthBoundary() throws Exception {
+        String minPassword = "Abc@1234";
+        String weakPassword = "123";
+
+        // Minimum acceptable password
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"user1\",\"email\":\"valid@example.com\",\"password\":\"" + minPassword + "\",\"consentToDataUsage\":true}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("User registered successfully"));
+
+        // Weak password
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"user2\",\"email\":\"weak@example.com\",\"password\":\"" + weakPassword + "\",\"consentToDataUsage\":true}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.validationErrors.password").value("Password is too weak"));
+    }
+    @Test
+    @DisplayName("Boundary Test: MFA Code Length")
+    public void testMfaCodeLengthBoundary() throws Exception {
+        // Minimum length (e.g., 6 digits)
+        String minMfaCode = "123456";
+
+        mockMvc.perform(post("/api/auth/verify-mfa")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"mfaCode\":\"" + minMfaCode + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("MFA verification successful."));
+
+        // Exceeding maximum length
+        String longMfaCode = "1234567890";
+
+        mockMvc.perform(post("/api/auth/verify-mfa")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"mfaCode\":\"" + longMfaCode + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.validationErrors.mfaCode").value("Invalid MFA code format"));
+    }
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/security/SecurityTestsExtended.java
+==============================
+// src/main/java/orsk/authmodule/tests/SecurityTestsExtended.java
+package orsk.authmodule.security;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+public class SecurityTestsExtended {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    @DisplayName("Security Test: Access Protected Endpoint with Valid JWT")
+    public void testAccessProtectedEndpointWithValidJWT() throws Exception {
+        String validJwt = "mockedValidJwtToken"; // Replace with actual token generation
+
+        mockMvc.perform(post("/api/protected/resource")
+                        .header("Authorization", "Bearer " + validJwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"key\":\"value\"}"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.key").value("value"));
+    }
+
+    // Additional security tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/security/JwtTestHelper.java
+==============================
+package orsk.authmodule.security;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+
+import javax.crypto.SecretKey;
+import java.util.Date;
+import java.util.Map;
+
+public class JwtTestHelper {
+
+    private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+
+    public static String generateValidJwt(String subject, Map<String, Object> claims, long expirationTimeMs) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + expirationTimeMs);
+
+        return Jwts.builder()
+                .setSubject(subject)
+                .addClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(SECRET_KEY)
+                .compact();
+    }
+
+    public static String generateValidJwt(String subject) {
+        return generateValidJwt(subject, Map.of(), 3600000);
+    }
+
+    public static String generateExpiredJwt(String subject) {
+        return generateValidJwt(subject, Map.of(), -3600000);
+    }
+
+    public static SecretKey getSecretKey() {
+        return SECRET_KEY;
+    }
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/security/SecurityTests.java
+==============================
+package orsk.authmodule.security;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@DisplayName("Security Tests for Endpoint Access")
+public class SecurityTests {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    // Generate a valid token mock for testing
+    private String generateValidJwt() {
+        return "mockedValidJwtToken"; // Replace with actual token generation logic if needed
+    }
+
+    @Test
+    @DisplayName("Access Protected Endpoint Without JWT")
+    public void testAccessProtectedEndpointWithoutJWT() throws Exception {
+        mockMvc.perform(get("/api/protected/resource"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Unauthorized"));
+    }
+
+    @Test
+    @DisplayName("Access Protected Endpoint With Invalid JWT")
+    public void testAccessProtectedEndpointWithInvalidJWT() throws Exception {
+        mockMvc.perform(get("/api/protected/resource")
+                        .header("Authorization", "Bearer invalidtoken"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Unauthorized"));
+    }
+
+    @Test
+    @DisplayName("Access Protected Endpoint With Expired JWT")
+    public void testAccessProtectedEndpointWithExpiredJWT() throws Exception {
+        String expiredJwt = "mockedExpiredJwtToken"; // Replace with expired token
+        mockMvc.perform(get("/api/protected/resource")
+                        .header("Authorization", "Bearer " + expiredJwt))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("JWT Token Expired"));
+    }
+
+    @Test
+    @DisplayName("Access Protected Endpoint With Valid JWT")
+    public void testAccessProtectedEndpointWithValidJWT() throws Exception {
+        String validJwt = generateValidJwt();
+
+        mockMvc.perform(get("/api/protected/resource")
+                        .header("Authorization", "Bearer " + validJwt))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message").value("Access granted"));
+    }
+
+    @Test
+    @DisplayName("Access Public Endpoint Without JWT")
+    public void testAccessPublicEndpointWithoutJWT() throws Exception {
+        mockMvc.perform(get("/api/auth/public"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Public endpoint accessible"));
+    }
+
+
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/stateTransistions/StateTransitionTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/StateTransitionTest.java
+package orsk.authmodule.stateTransistions;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.SpringBootMockMvcBuilderCustomizer;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class StateTransitionTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    @DisplayName("State Transition Test: Register -> Verify Email -> Login")
+    public void testStateTransition_RegisterVerifyLogin() throws Exception {
+        // Register User
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"stateUser\",\"email\":\"state@example.com\",\"password\":\"StrongPassword@123\",\"consentToDataUsage\":true}"))
+                .andExpect(status().isCreated());
+
+        // Verify Email
+        mockMvc.perform(post("/api/auth/verify-email")
+                        .param("token", "validStateToken"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Email verified successfully."));
+
+        // Login User
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"state@example.com\",\"password\":\"StrongPassword@123\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").exists());
+    }
+
+    // Additional state transition tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/integration/PasswordChangeIntegrationTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/PasswordChangeIntegrationTest.java
+package orsk.authmodule.integration;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.SpringBootMockMvcBuilderCustomizer;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import orsk.authmodule.dto.PasswordChangeRequest;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class PasswordChangeIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    @DisplayName("Integration Test: Change Password Successfully")
+    public void testChangePassword_Success() throws Exception {
+        PasswordChangeRequest request = new PasswordChangeRequest();
+        request.setToken("validChangePasswordToken");
+        request.setNewPassword("NewStrongPassword@123");
+
+        mockMvc.perform(post("/api/auth/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"validChangePasswordToken\",\"newPassword\":\"NewStrongPassword@123\"}"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Password changed successfully."));
+    }
+
+    @Test
+    @DisplayName("Integration Test: Change Password with Invalid Token")
+    public void testChangePassword_InvalidToken() throws Exception {
+        mockMvc.perform(post("/api/auth/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"invalidToken\",\"newPassword\":\"NewStrongPassword@123\"}"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Invalid password reset token"));
+    }
+
+    // Additional integration tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/integration/UserServiceIntegrationTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/UserServiceIntegrationTest.java
+package orsk.authmodule.integration;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import orsk.authmodule.model.Role;
+import orsk.authmodule.model.User;
+import orsk.authmodule.repository.RoleRepository;
+import orsk.authmodule.repository.UserRepository;
+import orsk.authmodule.service.UserService;
+
+import java.util.Optional;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@SpringBootTest
+public class UserServiceIntegrationTest {
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @MockBean
+    private org.springframework.security.crypto.password.PasswordEncoder mockPasswordEncoder;
+
+    @BeforeEach
+    public void setup() {
+        userRepository.deleteAll();
+        roleRepository.deleteAll();
+
+        Role userRole = new Role();
+        userRole.setName("ROLE_USER");
+        roleRepository.save(userRole);
+    }
+
+    @Test
+    @DisplayName("Integration Test: Register New User")
+    public void testRegisterNewUser_Integration() {
+        User user = new User();
+        user.setUsername("integrationUser");
+        user.setEmail("integration@example.com");
+        user.setPassword("plainPassword");
+
+        when(mockPasswordEncoder.encode("plainPassword")).thenReturn("hashedPassword");
+
+        User registeredUser = userService.registerNewUser(user);
+
+        assertNotNull(registeredUser);
+        assertEquals("integrationUser", registeredUser.getUsername());
+        assertEquals("hashedPassword", registeredUser.getPassword());
+        assertFalse(registeredUser.getEnabled());
+        assertTrue(registeredUser.getRoles().contains(roleRepository.findByName("ROLE_USER").get()));
+
+        verify(mockPasswordEncoder, times(1)).encode("plainPassword");
+        assertEquals(1, userRepository.count());
+    }
+
+    @Test
+    @DisplayName("Integration Test: Register User with Existing Username")
+    public void testRegisterUser_ExistingUsername_Integration() {
+        User existingUser = new User();
+        existingUser.setUsername("existingUser");
+        existingUser.setEmail("existing@example.com");
+        existingUser.setPassword(passwordEncoder.encode("password123"));
+        existingUser.setEnabled(true);
+        existingUser.setRoles(Set.of(roleRepository.findByName("ROLE_USER").get()));
+        userRepository.save(existingUser);
+
+        User newUser = new User();
+        newUser.setUsername("existingUser");
+        newUser.setEmail("newuser@example.com");
+        newUser.setPassword("plainPassword");
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> userService.registerNewUser(newUser));
+        assertEquals("Username already exists", exception.getMessage());
+
+        verify(mockPasswordEncoder, never()).encode(anyString());
+        assertEquals(1, userRepository.count());
+    }
+
+    // Additional integration tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/integration/AuthControllerIntegrationTest.java
+==============================
+package orsk.authmodule.integration;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import orsk.authmodule.dto.LoginRequest;
+import orsk.authmodule.dto.RegistrationRequest;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class AuthControllerIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    // Helper Methods
+    private String registerUser(String username, String email) throws Exception {
+        RegistrationRequest registrationRequest = RegistrationRequest.builder()
+                .username(username)
+                .email(email)
+                .password("StrongPassword@123")
+                .consentToDataUsage(true)
+                .build();
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registrationRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(content().string("User registered successfully. Please check your email for verification instructions."));
+
+        // Simulate email verification (fetch token from a mock service or database)
+        return "mockVerificationToken";
+    }
+
+    private void verifyEmail(String token) throws Exception {
+        mockMvc.perform(post("/api/auth/verify-email")
+                        .param("token", token))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Email verified successfully."));
+    }
+
+    private void loginUserWithMfa(String email, String password) throws Exception {
+        LoginRequest loginRequest = LoginRequest.builder()
+                .email(email)
+                .password(password)
+                .build();
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("MFA verification required"));
+
+        // Verify MFA
+        String mfaRequest = """
+                {
+                    "mfaCode": "123456"
+                }
+                """;
+
+        mockMvc.perform(post("/api/auth/verify-mfa")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mfaRequest))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("MFA verification successful."));
+    }
+
+    @Test
+    @DisplayName("Integration Test: Register and Login User with MFA")
+    public void testRegisterLoginWithMFA() throws Exception {
+        String token = registerUser("testUser", "testuser@example.com");
+        verifyEmail(token);
+        loginUserWithMfa("testuser@example.com", "StrongPassword@123");
+    }
+
+    @Test
+    @DisplayName("Negative Test: Register with Invalid Email")
+    public void testRegisterInvalidEmail() throws Exception {
+        RegistrationRequest invalidRequest = RegistrationRequest.builder()
+                .username("testUser2")
+                .email("invalid-email")
+                .password("StrongPassword@123")
+                .consentToDataUsage(true)
+                .build();
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.validationErrors.email").value("Invalid email format"));
+    }
+
+    @Test
+    @DisplayName("Negative Test: Login with Invalid Password")
+    public void testLoginInvalidPassword() throws Exception {
+        String token = registerUser("testUser3", "testuser3@example.com");
+        verifyEmail(token);
+
+        LoginRequest loginRequest = LoginRequest.builder()
+                .email("testuser3@example.com")
+                .password("WrongPassword@123")
+                .build();
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Invalid email or password"));
+    }
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/integration/AuthIntegrationTest.java
+==============================
+package orsk.authmodule.integration;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+public class AuthIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    @DisplayName("Test Successful Authentication")
+    public void testSuccessfulAuthentication() throws Exception {
+        // Arrange: Prepare valid user credentials
+        String validCredentials = """
+        {
+            "email": "testuser@example.com",
+            "password": "password123"
+        }
+        """;
+
+        // Act: Perform the sign-in request
+        ResultActions response = mockMvc.perform(
+                post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validCredentials)
+        );
+
+        // Assert: Verify the response
+        response.andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").exists())
+                .andExpect(jsonPath("$.accessToken").isNotEmpty())
+                .andExpect(jsonPath("$.refreshToken").exists())
+                .andExpect(jsonPath("$.refreshToken").isNotEmpty())
+                .andExpect(jsonPath("$.tokenType").value("Bearer"));
+    }
+
+    @Test
+    @DisplayName("Test Authentication with Invalid Credentials")
+    public void testAuthenticationInvalidCredentials() throws Exception {
+        String invalidCredentials = """
+            {
+                "email": "testuser@example.com",
+                "password": "wrongpassword"
+            }
+        """;
+
+        ResultActions response = mockMvc.perform(
+                post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidCredentials)
+        );
+
+        response.andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Invalid email or password"));
+    }
+
+    @Test
+    @DisplayName("Test Authentication with Missing Fields")
+    public void testAuthenticationMissingFields() throws Exception {
+        String incompleteCredentials = """
+            {
+                "email": "testuser@example.com"
+            }
+        """;
+
+        ResultActions response = mockMvc.perform(
+                post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(incompleteCredentials)
+        );
+
+        response.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.validationErrors").exists());
+    }
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/integration/DatabaseIntegrationTests.java
+==============================
+package orsk.authmodule.integration;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+import orsk.authmodule.model.Role;
+import orsk.authmodule.model.User;
+import orsk.authmodule.repository.RoleRepository;
+import orsk.authmodule.repository.UserRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+@Transactional
+@DisplayName("Enhanced Database Integration Tests for User Entity")
+public class DatabaseIntegrationTests {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    @BeforeEach
+    public void setup() {
+        roleRepository.deleteAll(); // Optional: Remove if roles should persist between tests
+        userRepository.deleteAll();
+
+        // Ensure ROLE_USER exists
+        if (!roleRepository.findByName("ROLE_USER").isPresent()) {
+            Role userRole = new Role();
+            userRole.setName("ROLE_USER");
+            roleRepository.save(userRole);
+        }
+    }
+    @Test
+    @DisplayName("Saving and Retrieving a User")
+    public void saveAndRetrieveUser() {
+        // Arrange
+        User user = createUser("testuser11", "testuser11@example.com", "password123");
+
+        // Act
+        Optional<User> retrievedUser = userRepository.findById(user.getId());
+
+        // Assert
+        assertTrue(retrievedUser.isPresent(), "Retrieved user should be present.");
+        assertEquals("testuser11", retrievedUser.get().getUsername(), "Username should match.");
+        assertTrue(passwordEncoder.matches("password123", retrievedUser.get().getPassword()), "Password should match.");
+    }
+
+    //FINE_>  tests run ok -> could improve matching errors and exceptions to enhance passing with green marks
+    @ParameterizedTest
+    @MethodSource("provideInvalidUserData")
+    @DisplayName("Invalid Data Handling")
+    public void invalidDataHandling(User user, String expectedMessageFragment) {
+        Exception exception = assertThrows(Exception.class, () -> userRepository.save(user));
+
+        Throwable cause = exception.getCause();
+        assertNotNull(cause, "The cause of the exception should not be null.");
+        assertTrue(cause instanceof org.hibernate.exception.ConstraintViolationException,
+                "Expected ConstraintViolationException, but got: " + cause.getClass().getName());
+
+        // Check message fragment
+        String message = cause.getMessage().toLowerCase();
+        assertTrue(message.contains(expectedMessageFragment.toLowerCase()),
+                "Exception message should contain: '" + expectedMessageFragment + "', but got: " + message);
+    }
+
+
+
+    @Test
+    @DisplayName("Unique Constraint Violation for Username")
+    public void uniqueConstraintOnUsername() {
+        // Arrange
+        createUser("duplicateuser", "user1@example.com", "password123");
+        User user2 = new User();
+        user2.setUsername("duplicateuser"); // Duplicate username
+        user2.setEmail("user2@example.com");
+        user2.setPassword(passwordEncoder.encode("password456"));
+        user2.setEnabled(true);
+        user2.setRoles(Set.of(roleRepository.findByName("ROLE_USER").get()));
+
+        // Act & Assert
+        Exception exception = assertThrows(Exception.class, () -> userRepository.save(user2));
+        assertTrue(exception.getMessage().contains("Duplicate entry") ||
+                        exception.getCause().getMessage().contains("Duplicate entry"),
+                "Exception should indicate duplicate entry.");
+    }
+
+    @Test
+    @DisplayName("Find User By Email")
+    public void findUserByEmail() {
+        // Arrange
+        createUser("testuser1", "testuser1@example.com", "password123");
+
+        // Act
+        Optional<User> foundUser = userRepository.findByEmail("testuser1@example.com");
+
+        // Assert
+        assertTrue(foundUser.isPresent(), "User should be found by email.");
+        assertEquals("testuser1", foundUser.get().getUsername(), "Username should match the email.");
+    }
+
+    @Test
+    @DisplayName("Updating a User")
+    public void updateUser() {
+        // Arrange
+        User user = createUser("testuser1", "testuser1@example.com", "password123");
+
+        // Act
+        user.setEmail("updated@example.com");
+        userRepository.save(user);
+        Optional<User> updatedUser = userRepository.findById(user.getId());
+
+        // Assert
+        assertTrue(updatedUser.isPresent(), "Updated user should be found.");
+        assertEquals("updated@example.com", updatedUser.get().getEmail(), "Email should be updated.");
+    }
+
+    @Test
+    @DisplayName("Deleting a User")
+    public void deleteUser() {
+        // Arrange
+        User user = createUser("testuser1", "testuser1@example.com", "password123");
+
+        // Act
+        userRepository.deleteById(user.getId());
+        Optional<User> deletedUser = userRepository.findById(user.getId());
+
+        // Assert
+        assertFalse(deletedUser.isPresent(), "User should no longer exist after deletion.");
+    }
+
+    @Test
+    @DisplayName("Find All Users")
+    public void findAllUsers() {
+        // Arrange
+        createUser("user1", "user1@example.com", "password123");
+        createUser("user2", "user2@example.com", "password456");
+
+        // Act
+        Iterable<User> users = userRepository.findAll();
+
+        // Assert
+        assertNotNull(users, "Users should not be null.");
+        assertTrue(users.iterator().hasNext(), "Users list should not be empty.");
+    }
+
+    private static Stream<Arguments> provideInvalidUserData() {
+        return Stream.of(
+                Arguments.of(new User(null, "user@example.com", "password123", true, new HashSet<>()), "username cannot be null"),
+                Arguments.of(new User("user", null, "password123", true, new HashSet<>()), "email cannot be null"),
+                Arguments.of(new User("user", "user@example.com", null, true, new HashSet<>()), "password cannot be null")
+        );
+    }
+
+    // TO DO : ensure string compatability
+    /*
+    private static Stream<User[]> provideInvalidUserData() {
+        Role defaultRole = new Role();
+        defaultRole.setName("ROLE_USER");
+
+        return Stream.of(
+                new User[]{new User(null, "user@example.com", "password123", true, Set.of(defaultRole)), "username"},
+                new User[]{new User("user", null, "password123", true, Set.of(defaultRole)), "email"},
+                new User[]{new User("user", "user@example.com", null, true, Set.of(defaultRole)), new User().toString().}
+        );
+    }
+
+     */
+
+    private User createUser(String username, String email, String password) {
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setEnabled(true);
+        user.setRoles(new HashSet<>(Set.of(roleRepository.findByName("ROLE_USER").orElseThrow())));
+        return userRepository.save(user);
+    }
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/JacocoCoverageTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/JacocoCoverageTest.java
+package orsk.authmodule;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+public class JacocoCoverageTest {
+
+    @Test
+    void contextLoads() {
+        // This test is used to generate coverage
+    }
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/equivalencePartitioning/EquivalencePartitioningTest.java
+==============================
+package orsk.authmodule.equivalencePartitioning;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+/**
+ * Equivalence Partitioning Test Suite
+ * Ensures input validation for user registration API.
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
+public class EquivalencePartitioningTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    // VALID PARTITION TESTS
+
+    @Test
+    @DisplayName("Partition: Register User with Valid Data")
+    public void testRegisterUser_ValidData() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {
+                            "username": "validUser",
+                            "email": "valid@example.com",
+                            "password": "StrongPassword@123",
+                            "consentToDataUsage": true
+                        }
+                        """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("User registered successfully"));
+    }
+
+    // INVALID PARTITION TESTS
+
+    @Test
+    @DisplayName("Partition: Register User with Invalid Email")
+    public void testRegisterUser_InvalidEmail() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {
+                            "username": "invalidEmailUser",
+                            "email": "invalid-email",
+                            "password": "StrongPassword@123",
+                            "consentToDataUsage": true
+                        }
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.validationErrors.email").value("Invalid email format"));
+    }
+
+    @Test
+    @DisplayName("Partition: Register User with Weak Password")
+    public void testRegisterUser_WeakPassword() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {
+                            "username": "weakPasswordUser",
+                            "email": "user@example.com",
+                            "password": "123",
+                            "consentToDataUsage": true
+                        }
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.validationErrors.password").value("Password is too weak"));
+    }
+
+    @Test
+    @DisplayName("Partition: Register User without Consent")
+    public void testRegisterUser_NoConsent() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {
+                            "username": "noConsentUser",
+                            "email": "noconsent@example.com",
+                            "password": "StrongPassword@123",
+                            "consentToDataUsage": false
+                        }
+                        """))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Consent to data usage is required"));
+    }
+
+    @Test
+    @DisplayName("Partition: Register User with Missing Fields")
+    public void testRegisterUser_MissingFields() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {
+                            "username": "",
+                            "email": "",
+                            "password": "",
+                            "consentToDataUsage": null
+                        }
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.validationErrors.username").value("Username is required"))
+                .andExpect(jsonPath("$.validationErrors.email").value("Email is required"))
+                .andExpect(jsonPath("$.validationErrors.password").value("Password is required"))
+                .andExpect(jsonPath("$.validationErrors.consentToDataUsage").value("Consent is required"));
+    }
+
+    @Test
+    @DisplayName("Partition: Register User with Invalid Username")
+    public void testRegisterUser_InvalidUsername() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {
+                            "username": "!",
+                            "email": "user@example.com",
+                            "password": "StrongPassword@123",
+                            "consentToDataUsage": true
+                        }
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.validationErrors.username").value("Username must contain only alphanumeric characters"));
+    }
+
+    // EDGE CASE TESTS
+
+    @Test
+    @DisplayName("Partition: Register User with Maximum Allowed Fields")
+    public void testRegisterUser_MaxAllowedFields() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {
+                            "username": "a".repeat(50),
+                            "email": "max.user@example.com",
+                            "password": "StrongPassword@123",
+                            "consentToDataUsage": true
+                        }
+                        """))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("Partition: Register User with Minimum Allowed Fields")
+    public void testRegisterUser_MinAllowedFields() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {
+                            "username": "a",
+                            "email": "a@b.co",
+                            "password": "Abc@1234",
+                            "consentToDataUsage": true
+                        }
+                        """))
+                .andExpect(status().isCreated());
+    }
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/system/PasswordResetFlowTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/PasswordResetFlowTest.java
+package orsk.authmodule.system;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.SpringBootMockMvcBuilderCustomizer;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import orsk.authmodule.dto.PasswordResetRequest;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class PasswordResetFlowTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    @DisplayName("Password Reset Flow: Initiate and Change Password")
+    public void testPasswordResetFlow() throws Exception {
+        // Initiate Password Reset
+        PasswordResetRequest resetRequest = new PasswordResetRequest();
+        resetRequest.setEmail("testuser@example.com");
+
+        mockMvc.perform(post("/api/auth/password-reset")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"testuser@example.com\"}"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Password reset instructions have been sent to your email."));
+
+        // Assume token is retrieved from email
+        String resetToken = "validPasswordResetToken";
+
+        // Change Password
+        mockMvc.perform(post("/api/auth/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"validPasswordResetToken\",\"newPassword\":\"NewStrongPassword@123\"}"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Password changed successfully."));
+    }
+
+    // Additional password reset flow tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/system/AuthenticationFlowTest.java
+==============================
+package orsk.authmodule.system;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import orsk.authmodule.dto.LoginRequest;
+import orsk.authmodule.dto.MfaVerificationRequest;
+import orsk.authmodule.dto.RegistrationRequest;
+import orsk.authmodule.repository.MfaTokenRepository;
+import orsk.authmodule.repository.UserRepository;
+import orsk.authmodule.repository.VerificationTokenRepository;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+public class AuthenticationFlowTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private VerificationTokenRepository verificationTokenRepository;
+
+    @Autowired
+    private MfaTokenRepository mfaTokenRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    /**
+     * Full end-to-end test for user registration, email verification, MFA, and login.
+     */
+    @Test
+    @DisplayName("System Test: Complete Authentication Flow with MFA")
+    public void testCompleteAuthenticationFlow() throws Exception {
+        // Step 1: Register User
+        String username = "flowUser";
+        String email = "flowuser@example.com";
+        String password = "StrongPassword@123";
+
+        registerUser(username, email, password);
+
+        // Step 2: Simulate Email Verification
+        String verificationToken = fetchVerificationToken(email);
+        verifyEmail(verificationToken);
+
+        // Step 3: Attempt Login (Expect MFA Required)
+        attemptLoginWithMfa(email, password);
+
+        // Step 4: Verify MFA
+        String mfaCode = fetchMfaCode(username);
+        verifyMfa(mfaCode);
+
+        // Step 5: Confirm Successful Post-MFA Login
+        confirmProtectedAccess();
+    }
+
+    /**
+     * Parameterized test to validate registration inputs.
+     */
+    @ParameterizedTest
+    @CsvSource({
+            "validUser, valid@example.com, StrongPassword@123, true",
+            "invalidUser, invalid-email, weak, false"
+    })
+    @DisplayName("Parameterized Test: Registration with Varying Input")
+    public void testRegistrationWithVaryingInput(String username, String email, String password, boolean isValid) throws Exception {
+        RegistrationRequest request = RegistrationRequest.builder()
+                .username(username)
+                .email(email)
+                .password(password)
+                .consentToDataUsage(true)
+                .build();
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(isValid ? status().isCreated() : status().isBadRequest());
+    }
+
+    /**
+     * Validates behavior when attempting to register a duplicate user.
+     */
+    @Test
+    @DisplayName("Edge Case: Duplicate User Registration")
+    public void testDuplicateUserRegistration() throws Exception {
+        String username = "duplicateUser";
+        String email = "duplicate@example.com";
+        String password = "StrongPassword@123";
+
+        registerUser(username, email, password);
+
+        RegistrationRequest duplicateUser = RegistrationRequest.builder()
+                .username(username)
+                .email(email)
+                .password(password)
+                .consentToDataUsage(true)
+                .build();
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(duplicateUser)))
+                .andExpect(status().isConflict())
+                .andExpect(content().string("Username or email already exists."));
+    }
+
+    // --- Helper Methods ---
+
+    private void registerUser(String username, String email, String password) throws Exception {
+        RegistrationRequest registrationRequest = RegistrationRequest.builder()
+                .username(username)
+                .email(email)
+                .password(password)
+                .consentToDataUsage(true)
+                .build();
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registrationRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(content().string("User registered successfully. Please check your email for verification instructions."));
+
+        assertThat(userRepository.findByUsername(username)).isNotNull();
+    }
+
+    private void verifyEmail(String token) throws Exception {
+        mockMvc.perform(post("/api/auth/verify-email")
+                        .param("token", token))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Email verified successfully."));
+    }
+
+    private void attemptLoginWithMfa(String email, String password) throws Exception {
+        LoginRequest loginRequest = LoginRequest.builder()
+                .email(email)
+                .password(password)
+                .build();
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("MFA verification required"));
+    }
+
+    private void verifyMfa(String mfaCode) throws Exception {
+        MfaVerificationRequest mfaRequest = MfaVerificationRequest.builder()
+                .mfaCode(mfaCode)
+                .build();
+
+        mockMvc.perform(post("/api/auth/verify-mfa")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mfaRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("MFA verification successful."));
+    }
+
+    private void confirmProtectedAccess() throws Exception {
+        // Mock JWT token; replace with actual implementation for token retrieval
+        String jwtToken = "mockedJwtToken";
+
+        mockMvc.perform(post("/api/protected-endpoint")
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isOk());
+    }
+
+    private String fetchVerificationToken(String email) {
+        return verificationTokenRepository.findByUserEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Verification token not found for email: " + email))
+                .getToken();
+    }
+
+    private String fetchMfaCode(String username) {
+        return mfaTokenRepository.findByUserUsername(username)
+                .orElseThrow(() -> new IllegalStateException("MFA code not found for username: " + username))
+                .getMfaCode();
+    }
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/system/RiskAssessmentTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/RiskAssessmentTest.java
+package orsk.authmodule.system;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Risk Assessment Test Cases
+ */
+public class RiskAssessmentTest {
+
+    @Test
+    @DisplayName("Test Risk Identification")
+    public void testRiskIdentification() {
+        // Identify potential risks such as security vulnerabilities, performance issues, etc.
+        String risk = "JWT Token Leakage";
+        assertNotNull(risk);
+    }
+
+    @Test
+    @DisplayName("Test Risk Mitigation Strategy")
+    public void testRiskMitigation() {
+        // Define mitigation strategies
+        String mitigation = "Use secure storage for JWT secrets and implement token expiration.";
+        assertNotNull(mitigation);
+    }
+
+    // Additional risk assessment tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/endToEnd/AuthControllerE2ETest.java
+==============================
+package orsk.authmodule.endToEnd;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class AuthControllerE2ETest {
+
+    private WebDriver driver;
+
+    @BeforeEach
+    public void setUp() {
+        // Update the path to your ChromeDriver executable
+        System.setProperty("webdriver.chrome.driver", "/opt/homebrew/bin/chromedriver");
+        driver = new ChromeDriver();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+
+    @Test
+    @DisplayName("End-to-End Test: User Registration")
+    public void testUserRegistration() {
+        driver.get("http://localhost:5173/register");
+
+        // Fill out the registration form
+        WebElement username = driver.findElement(By.id("username"));
+        WebElement email = driver.findElement(By.id("email"));
+        WebElement password = driver.findElement(By.id("password"));
+        WebElement consent = driver.findElement(By.id("consent"));
+        WebElement submit = driver.findElement(By.id("submit"));
+
+        username.sendKeys("e2eUser");
+        email.sendKeys("e2euser@example.com");
+        password.sendKeys("StrongPassword@123");
+        consent.click();
+        submit.click();
+
+        // Verify the success message
+        WebElement successMessage = driver.findElement(By.id("success-message"));
+        assertEquals("Registration successful. Please verify your email.", successMessage.getText());
+    }
+
+    @Test
+    @DisplayName("End-to-End Test: User Login")
+    public void testUserLogin() {
+        driver.get("http://localhost:5173/login");
+
+        // Fill out the login form
+        WebElement email = driver.findElement(By.id("email"));
+        WebElement password = driver.findElement(By.id("password"));
+        WebElement loginSubmit = driver.findElement(By.id("login-submit"));
+
+        email.sendKeys("e2euser@example.com");
+        password.sendKeys("StrongPassword@123");
+        loginSubmit.click();
+
+        // Verify the user is redirected to the dashboard
+        WebElement dashboard = driver.findElement(By.id("dashboard"));
+        assertTrue(dashboard.isDisplayed(), "Dashboard should be displayed after a successful login.");
+    }
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/staticAnalysis/StaticAnalysisConfig.java
+==============================
+// src/main/java/orsk/authmodule/tests/StaticAnalysisConfig.java
+package orsk.authmodule.staticAnalysis;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+
+/**
+ * Configuration for Static Analysis Tools Integration
+ */
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class StaticAnalysisConfig {
+
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info().title("API Documentation")
+                        .version("1.0")
+                        .description("Static Analysis Tools Integration"));
+    }
+
+    @Bean
+    public Docket api() {
+        return new Docket(DocumentationType.OAS_30)
+          .select()
+          .apis(RequestHandlerSelectors.basePackage("orsk.authmodule.controller"))
+          .paths(PathSelectors.any())
+          .build();
+    }
+}
+
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/api/ApiTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/ApiTest.java
+package orsk.authmodule.api;
+
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import static io.restassured.RestAssured.*;
+import static org.hamcrest.Matchers.*;
+
+public class ApiTest {
+
+    @BeforeAll
+    public static void setup() {
+        RestAssured.baseURI = "http://localhost";
+        RestAssured.port = 8085;
+    }
+
+    @Test
+    @DisplayName("API Test: Successful Registration")
+    public void testRegisterUser_Success() {
+        given()
+            .contentType(ContentType.JSON)
+            .body("{\"username\":\"apiUser\",\"email\":\"apiuser@example.com\",\"password\":\"StrongPassword@123\",\"consentToDataUsage\":true}")
+        .when()
+            .post("/api/auth/register")
+        .then()
+            .statusCode(201)
+            .body(equalTo("User registered successfully. Please check your email for verification instructions."));
+    }
+
+    @Test
+    @DisplayName("API Test: Registration with Existing Email")
+    public void testRegisterUser_Conflict() {
+        given()
+            .contentType(ContentType.JSON)
+            .body("{\"username\":\"apiUser2\",\"email\":\"apiuser@example.com\",\"password\":\"StrongPassword@123\",\"consentToDataUsage\":true}")
+        .when()
+            .post("/api/auth/register")
+        .then()
+            .statusCode(409)
+            .body(equalTo("Username or email already exists"));
+    }
+
+    // Additional API tests for login, password reset, etc.
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/api/ApiEndpointTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/ApiEndpointTest.java
+package orsk.authmodule.api;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.SpringBootMockMvcBuilderCustomizer;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class ApiEndpointTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    @DisplayName("API Test: Access Protected Endpoint without JWT")
+    public void testAccessProtectedEndpointWithoutJWT() throws Exception {
+        mockMvc.perform(get("/api/protected/resource"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("API Test: Access Protected Endpoint with Invalid JWT")
+    public void testAccessProtectedEndpointWithInvalidJWT() throws Exception {
+        mockMvc.perform(get("/api/protected/resource")
+                        .header("Authorization", "Bearer invalidtoken"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("API Test: Access Protected Endpoint with Valid JWT")
+    public void testAccessProtectedEndpointWithValidJWT() throws Exception {
+        String validJwt = "mockedValidJwtToken"; // Replace with actual token generation
+
+        mockMvc.perform(get("/api/protected/resource")
+                        .header("Authorization", "Bearer " + validJwt))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.key").value("value"));
+    }
+
+    // Additional API endpoint tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/AuthmoduleApplicationTests.java
+==============================
+package orsk.authmodule;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class AuthmoduleApplicationTests {
+
+    @Test
+    void contextLoads() {
+    }
+
+}
+
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/decisionTable/DecisionTableTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/DecisionTableTest.java
+package orsk.authmodule.decisionTable;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.SpringBootMockMvcBuilderCustomizer;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class DecisionTableTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    @DisplayName("Decision Table Test: Consent to Data Usage")
+    public void testConsentDecision() throws Exception {
+        // Consent Given
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"consentUser\",\"email\":\"consent@example.com\",\"password\":\"StrongPassword@123\",\"consentToDataUsage\":true}"))
+                .andExpect(status().isCreated());
+
+        // Consent Not Given
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"noConsentUser\",\"email\":\"noconsent@example.com\",\"password\":\"StrongPassword@123\",\"consentToDataUsage\":false}"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User registered successfully. Please check your email for verification instructions."));
+    }
+
+    // Additional decision table tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/performance/PerformanceTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/PerformanceTest.java
+package orsk.authmodule.performance;
+
+import io.gatling.javaapi.core.*;
+import io.gatling.javaapi.http.*;
+import org.junit.jupiter.api.Test;
+
+import static io.gatling.javaapi.core.CoreDsl.*;
+import static io.gatling.javaapi.http.HttpDsl.*;
+
+public class PerformanceTest extends Simulation {
+
+    HttpProtocolBuilder httpProtocol = http
+        .baseUrl("http://localhost:8080")
+        .acceptHeader("application/json");
+
+    ScenarioBuilder scn = scenario("AuthModule Load Test")
+        .exec(
+            http("Login Request")
+                .post("/api/auth/login")
+                .header("Content-Type", "application/json")
+                .body(StringBody("{\"email\":\"testuser@example.com\",\"password\":\"StrongPassword@123\"}")).asJson()
+                .check(status().is(200))
+        );
+
+    {
+        setUp(
+            scn.injectOpen(rampUsers(1000).during(60))
+        ).protocols(httpProtocol);
+    }
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/seleniumTests/SeleniumTests.java
+==============================
+// src/test/java/orsk/authmodule/tests/SeleniumTests.java
+package orsk.authmodule.seleniumTests;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.junit.jupiter.api.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import orsk.authmodule.model.User;
+import orsk.authmodule.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+public class SeleniumTests {
+
+    private WebDriver driver;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @BeforeAll
+    public static void setupClass() {
+        WebDriverManager.chromedriver().setup();
+    }
+
+    @BeforeEach
+    public void setupTest() {
+        driver = new ChromeDriver();
+    }
+
+    @AfterEach
+    public void teardown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+
+    @Test
+    @DisplayName("Selenium Test: User Registration")
+    public void testUserRegistration() {
+        driver.get("http://localhost:5173/register");
+
+        WebElement username = driver.findElement(By.id("username"));
+        WebElement email = driver.findElement(By.id("email"));
+        WebElement password = driver.findElement(By.id("password"));
+        WebElement consent = driver.findElement(By.id("consent"));
+        WebElement submit = driver.findElement(By.id("submit"));
+
+        username.sendKeys("seleniumUser");
+        email.sendKeys("seleniumuser@example.com");
+        password.sendKeys("StrongPassword@123");
+        consent.click();
+        submit.click();
+
+        WebElement successMessage = driver.findElement(By.id("success-message"));
+        assertEquals("Registration successful. Please verify your email.", successMessage.getText());
+
+        User user = userRepository.findByEmail("seleniumuser@example.com").orElse(null);
+        assertNotNull(user);
+        assertEquals("seleniumUser", user.getUsername());
+    }
+
+    // Additional Selenium tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/controllers/AuthControllerTest.java
+==============================
+// src/test/java/orsk/authmodule/controllers/AuthControllerTest.java
+package orsk.authmodule.controllers;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import orsk.authmodule.controller.AuthController;
+import orsk.authmodule.dto.*;
+import orsk.authmodule.exceptions.*;
+import orsk.authmodule.service.AuthService;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(AuthController.class)
+public class AuthControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
+    private AuthService authService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    @DisplayName("Unit Test: Successful User Registration")
+    public void testRegisterUser_Success() throws Exception {
+        RegistrationRequest request = new RegistrationRequest();
+        request.setUsername("unitUser");
+        request.setEmail("unit@example.com");
+        request.setPassword("StrongPassword@123");
+        request.setConsentToDataUsage(true);
+
+        doNothing().when(authService).registerUser(any(RegistrationRequest.class));
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(content().string("User registered successfully. Please check your email for verification instructions."));
+    }
+
+    @Test
+    @DisplayName("Unit Test: User Registration with Existing Email")
+    public void testRegisterUser_Conflict() throws Exception {
+        RegistrationRequest request = new RegistrationRequest();
+        request.setUsername("unitUser");
+        request.setEmail("existing@example.com");
+        request.setPassword("StrongPassword@123");
+        request.setConsentToDataUsage(true);
+
+        doThrow(new UserAlreadyExistsException("Username or email already exists"))
+                .when(authService).registerUser(any(RegistrationRequest.class));
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(content().string("Username or email already exists"));
+    }
+
+    @Test
+    void registerUser_ShouldReturnConflict_WhenUserExists() throws Exception {
+        RegistrationRequest request = RegistrationRequest.builder()
+                .email("existing@example.com")
+                .username("existingUser")
+                .password("StrongP@ssw0rd!")
+                .build();
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(content().string(containsString("Email or Username already exists.")));
+    }
+
+    // Additional unit tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/controllers/AuthControllerUnitTest.java
+==============================
+package orsk.authmodule.controllers;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import orsk.authmodule.controller.AuthController;
+import orsk.authmodule.dto.RegistrationRequest;
+import orsk.authmodule.exceptions.*;
+import orsk.authmodule.service.AuthService;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(AuthController.class)
+public class AuthControllerUnitTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private AuthService authService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    @DisplayName("Successful User Registration")
+    public void testRegisterUser_Success() throws Exception {
+        RegistrationRequest request = new RegistrationRequest("unitUser", "unit@example.com", "StrongPassword@123", true);
+
+        doNothing().when(authService).registerUser(any(RegistrationRequest.class));
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("User registered successfully. Please check your email for verification instructions."));
+    }
+
+    @Test
+    @DisplayName("User Registration with Existing Email")
+    public void testRegisterUser_Conflict() throws Exception {
+        RegistrationRequest request = new RegistrationRequest("unitUser", "existing@example.com", "StrongPassword@123", true);
+
+        doThrow(new UserAlreadyExistsException("Username or email already exists"))
+                .when(authService).registerUser(any(RegistrationRequest.class));
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("Username or email already exists"));
+    }
+
+    @Test
+    @DisplayName("Invalid User Registration Data")
+    public void testRegisterUser_BadRequest() throws Exception {
+        RegistrationRequest request = new RegistrationRequest("", "", "weak", false);
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").exists());
+    }
+
+    @Test
+    @DisplayName("Rate Limiting on Registration Endpoint")
+    public void testRegisterUser_RateLimiting() throws Exception {
+        RegistrationRequest request = new RegistrationRequest("unitUser", "unit@example.com", "StrongPassword@123", true);
+
+        for (int i = 0; i < 10; i++) {
+            mockMvc.perform(post("/api/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)));
+        }
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isTooManyRequests());
+    }
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/migration/SchemaIntegrationTest.java
+==============================
+package orsk.authmodule.migration;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import orsk.authmodule.model.User;
+import orsk.authmodule.repository.UserRepository;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DataJpaTest
+public class SchemaIntegrationTest {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Test
+    public void testSchemaMigration() {
+        User user = new User();
+        user.setUsername("testuser");
+        user.setEmail("test@example.com");
+
+        User savedUser = userRepository.save(user);
+
+        assertThat(savedUser.getId()).isNotNull();
+        assertThat(savedUser.getUsername()).isEqualTo("testuser");
+    }
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/migration/FlywayMigrationTest.java
+==============================
+
+/*package orsk.authmodule.migration;
+
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+public class FlywayMigrationTest {
+
+    @Autowired
+    private Flyway flyway;
+
+    @Test
+    public void testFlywayMigrations() {
+        flyway.migrate();
+        assertEquals(0, flyway.validateWithResult().invalidMigrations.size());
+    }
+}
+
+ */
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/coverage/CoverageTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/CoverageTest.java
+package orsk.authmodule.coverage;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+public class CoverageTest {
+
+    @Test
+    void contextLoads() {
+        // Test to generate coverage
+    }
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/services/AuditLogServiceTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/AuditLogServiceTest.java
+package orsk.authmodule.services;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import orsk.authmodule.model.AuditLog;
+import orsk.authmodule.model.User;
+import orsk.authmodule.repository.AuditLogRepository;
+import orsk.authmodule.service.AuditLogService;
+
+import java.time.Instant;
+
+import static org.mockito.Mockito.*;
+
+public class AuditLogServiceTest {
+
+    @InjectMocks
+    private AuditLogService auditLogService;
+
+    @Mock
+    private AuditLogRepository auditLogRepository;
+
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    @DisplayName("Log User Action Successfully")
+    public void testLogAction_Success() {
+        User user = new User();
+        user.setUsername("auditUser");
+
+        auditLogService.logAction(user, "TEST_ACTION", "127.0.0.1", "Test details");
+
+        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
+    }
+
+    // Additional audit log tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/services/AuthServiceUnitTest.java
+==============================
+// src/test/java/orsk/authmodule/service/AuthServiceUnitTest.java
+package orsk.authmodule.services;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import orsk.authmodule.dto.*;
+import orsk.authmodule.exceptions.UserAlreadyExistsException;
+import orsk.authmodule.model.Role;
+import orsk.authmodule.model.User;
+import orsk.authmodule.repository.*;
+import orsk.authmodule.security.JwtTokenProvider;
+import orsk.authmodule.service.AuditLogService;
+import orsk.authmodule.service.AuthService;
+import orsk.authmodule.service.MfaTokenService;
+import orsk.authmodule.service.RefreshTokenService;
+
+import java.util.Optional;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+public class AuthServiceUnitTest {
+
+    @InjectMocks
+    private AuthService authService;
+
+    @Mock
+    private AuthenticationManager authenticationManager;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private RoleRepository roleRepository;
+
+    @Mock
+    private VerificationTokenRepository verificationTokenRepository;
+
+    @Mock
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private JwtTokenProvider tokenProvider;
+
+    @Mock
+    private RefreshTokenService refreshTokenService;
+
+    @Mock
+    private MfaTokenService mfaTokenService;
+
+    @Mock
+    private AuditLogService auditLogService;
+
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+        Role userRole = new Role();
+        userRole.setName("ROLE_USER");
+        when(roleRepository.findByName("ROLE_USER")).thenReturn(Optional.of(userRole));
+    }
+
+    @Test
+    @DisplayName("Register User Successfully")
+    public void testRegisterUser_Success() {
+        RegistrationRequest request = new RegistrationRequest();
+        request.setUsername("newuser");
+        request.setEmail("newuser@example.com");
+        request.setPassword("StrongPassword@123");
+        request.setConsentToDataUsage(true);
+
+        when(userRepository.existsByUsernameOrEmail(anyString(), anyString())).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("hashedPassword");
+
+        assertDoesNotThrow(() -> authService.registerUser(request));
+
+        verify(userRepository, times(1)).save(any(User.class));
+        verify(verificationTokenRepository, times(1)).save(any());
+        verify(auditLogService, times(1)).logAction(any(), eq("USER_REGISTERED"), any(), any());
+    }
+
+    @Test
+    @DisplayName("Register User with Existing Username or Email")
+    public void testRegisterUser_UserAlreadyExists() {
+        RegistrationRequest request = new RegistrationRequest();
+        request.setUsername("existinguser");
+        request.setEmail("existinguser@example.com");
+        request.setPassword("StrongPassword@123");
+        request.setConsentToDataUsage(true);
+
+        when(userRepository.existsByUsernameOrEmail(anyString(), anyString())).thenReturn(true);
+
+        UserAlreadyExistsException exception = assertThrows(UserAlreadyExistsException.class, () -> authService.registerUser(request));
+        assertEquals("Username or email already exists", exception.getMessage());
+
+        verify(userRepository, never()).save(any(User.class));
+        verify(verificationTokenRepository, never()).save(any());
+        verify(auditLogService, never()).logAction(any(), any(), any(), any());
+    }
+
+    // Additional unit tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/services/PasswordChangeTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/PasswordChangeTest.java
+package orsk.authmodule.services;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import orsk.authmodule.dto.PasswordChangeRequest;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class PasswordChangeTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    @DisplayName("Password Change Successfully")
+    public void testChangePassword_Success() throws Exception {
+        PasswordChangeRequest request = new PasswordChangeRequest();
+        request.setToken("validResetToken");
+        request.setNewPassword("NewStrongPassword@123");
+
+        mockMvc.perform(post("/api/auth/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"validResetToken\",\"newPassword\":\"NewStrongPassword@123\"}"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Password changed successfully."));
+    }
+
+    @Test
+    @DisplayName("Password Change with Invalid Token")
+    public void testChangePassword_InvalidToken() throws Exception {
+        mockMvc.perform(post("/api/auth/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"invalidToken\",\"newPassword\":\"NewStrongPassword@123\"}"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Invalid password reset token"));
+    }
+
+    // Additional password change tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/services/EmailServiceTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/EmailServiceTest.java
+package orsk.authmodule.services;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import orsk.authmodule.service.EmailService;
+
+import static org.mockito.Mockito.*;
+
+public class EmailServiceTest {
+
+    @InjectMocks
+    private EmailService emailService;
+
+    @Test
+    @DisplayName("Test Sending Verification Email")
+    public void testSendVerificationEmail() {
+        emailService.sendVerificationEmail("test@example.com", "verificationToken");
+        // Verify email sending logic, possibly mock SMTP server
+    }
+
+    @Test
+    @DisplayName("Test Sending Password Reset Email")
+    public void testSendPasswordResetEmail() {
+        emailService.sendPasswordResetEmail("test@example.com", "passwordResetToken");
+        // Verify email sending logic
+    }
+
+    @Test
+    @DisplayName("Test Sending MFA Code")
+    public void testSendMfaCode() {
+        emailService.sendMfaCode("test@example.com", "123456");
+        // Verify email/SMS sending logic
+    }
+
+    // Additional email service tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/services/AuthServiceTest.java
+==============================
+package orsk.authmodule.services;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import orsk.authmodule.dto.*;
+import orsk.authmodule.exceptions.UserAlreadyExistsException;
+import orsk.authmodule.model.Role;
+import orsk.authmodule.model.User;
+import orsk.authmodule.repository.*;
+import orsk.authmodule.security.JwtTokenProvider;
+import orsk.authmodule.service.AuditLogService;
+import orsk.authmodule.service.AuthService;
+import orsk.authmodule.service.MfaTokenService;
+import orsk.authmodule.service.RefreshTokenService;
+
+import java.util.Optional;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+public class AuthServiceTest {
+
+    @InjectMocks
+    private AuthService authService;
+
+    @Mock
+    private AuthenticationManager authenticationManager;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private RoleRepository roleRepository;
+
+    @Mock
+    private VerificationTokenRepository verificationTokenRepository;
+
+    @Mock
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private JwtTokenProvider tokenProvider;
+
+    @Mock
+    private RefreshTokenService refreshTokenService;
+
+    @Mock
+    private MfaTokenService mfaTokenService;
+
+    @Mock
+    private AuditLogService auditLogService;
+
+    @BeforeEach
+    public void setup() {
+        // Clear existing data
+        userRepository.deleteAll();
+        roleRepository.deleteAll();
+
+        // Initialize ROLE_USER
+        Role userRole = new Role();
+        userRole.setName("ROLE_USER");
+        roleRepository.save(userRole);
+    }
+
+    @Test
+    @DisplayName("Register User Successfully")
+    public void testRegisterUser_Success() {
+        // Arrange
+        RegistrationRequest request = new RegistrationRequest();
+        request.setUsername("newuser");
+        request.setEmail("newuser@example.com");
+        request.setPassword("StrongPassword@123");
+        request.setConsentToDataUsage(true);
+
+        when(userRepository.existsByUsernameOrEmail(anyString(), anyString())).thenReturn(false);
+
+        Role role = new Role();
+        role.setName("ROLE_USER");
+        when(roleRepository.findByName("ROLE_USER")).thenReturn(Optional.of(role));
+
+        when(passwordEncoder.encode(anyString())).thenReturn("hashedPassword");
+
+        // Act
+        assertDoesNotThrow(() -> authService.registerUser(request));
+
+        // Assert
+        verify(userRepository, times(1)).save(any(User.class));
+        verify(verificationTokenRepository, times(1)).save(any());
+        verify(auditLogService, times(1)).logAction(any(), eq("USER_REGISTERED"), any(), any());
+    }
+
+    @Test
+    @DisplayName("Register User with Existing Username or Email")
+    public void testRegisterUser_UserAlreadyExists() {
+        // Arrange
+        RegistrationRequest request = new RegistrationRequest();
+        request.setUsername("existinguser");
+        request.setEmail("existinguser@example.com");
+        request.setPassword("StrongPassword@123");
+        request.setConsentToDataUsage(true);
+
+        when(userRepository.existsByUsernameOrEmail(anyString(), anyString())).thenReturn(true);
+
+        // Act & Assert
+        UserAlreadyExistsException exception = assertThrows(UserAlreadyExistsException.class, () -> authService.registerUser(request));
+        assertEquals("Username or email already exists", exception.getMessage());
+
+        verify(userRepository, never()).save(any(User.class));
+        verify(verificationTokenRepository, never()).save(any());
+        verify(auditLogService, never()).logAction(any(), any(), any(), any());
+    }
+
+    // Additional unit tests for other methods (login, password reset, etc.)
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/services/AuthServiceIntegrationTest.java
+==============================
+package orsk.authmodule.services;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import orsk.authmodule.dto.RegistrationRequest;
+import orsk.authmodule.exceptions.UserAlreadyExistsException;
+import orsk.authmodule.model.Role;
+import orsk.authmodule.model.User;
+import orsk.authmodule.repository.RoleRepository;
+import orsk.authmodule.repository.UserRepository;
+import orsk.authmodule.service.AuditLogService;
+import orsk.authmodule.service.AuthService;
+
+import java.util.Optional;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@SpringBootTest
+public class AuthServiceIntegrationTest {
+
+    @Autowired
+    private AuthService authService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @InjectMocks
+    private AuditLogService auditLogService;
+
+
+
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+
+        userRepository.deleteAll();
+        roleRepository.deleteAll();
+
+        // Initialize ROLE_USER
+        Role userRole = new Role();
+        userRole.setName("ROLE_USER");
+        roleRepository.save(userRole);
+    }
+
+    @Test
+    @DisplayName("Integration Test: Register User Successfully")
+    public void testRegisterUser_Success() {
+        RegistrationRequest request = new RegistrationRequest();
+        request.setUsername("integrationUser");
+        request.setEmail("integration@example.com");
+        request.setPassword("StrongPassword@123");
+        request.setConsentToDataUsage(true);
+
+        assertDoesNotThrow(() -> authService.registerUser(request));
+
+        Optional<User> userOpt = userRepository.findByEmail("integration@example.com");
+        assertTrue(userOpt.isPresent());
+        User user = userOpt.get();
+        assertEquals("integrationUser", user.getUsername());
+        assertTrue(passwordEncoder.matches("StrongPassword@123", user.getPassword()));
+        assertFalse(user.getEnabled());
+        assertEquals(Set.of(roleRepository.findByName("ROLE_USER").get()), user.getRoles());
+
+        // Verify audit logging
+        verify(auditLogService, times(1)).logAction(eq(user), eq("USER_REGISTERED"), anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("Integration Test: Register User with Existing Username")
+    public void testRegisterUser_ExistingUsername() {
+        // Arrange
+        User existingUser = new User();
+        existingUser.setUsername("existingUser");
+        existingUser.setEmail("existing@example.com");
+        existingUser.setPassword(passwordEncoder.encode("password123"));
+        existingUser.setEnabled(true);
+        existingUser.setConsentToDataUsage(true);
+        existingUser.setRoles(Set.of(roleRepository.findByName("ROLE_USER").get()));
+        userRepository.save(existingUser);
+
+        RegistrationRequest request = new RegistrationRequest();
+        request.setUsername("existingUser");
+        request.setEmail("newemail@example.com");
+        request.setPassword("StrongPassword@123");
+        request.setConsentToDataUsage(true);
+
+        // Act & Assert
+        UserAlreadyExistsException exception = assertThrows(UserAlreadyExistsException.class, () -> authService.registerUser(request));
+        assertEquals("Username or email already exists", exception.getMessage());
+
+        // Verify that no new user is created
+        assertEquals(1, userRepository.count());
+
+        // Verify audit logging was not called
+        verify(auditLogService, never()).logAction(any(), any(), anyString(), anyString());
+    }
+
+    // Additional integration tests for login, MFA, password reset, etc.
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/services/PasswordResetServiceTest.java
+==============================
+// src/test/java/orsk/authmodule/services/PasswordResetServiceTest.java
+package orsk.authmodule.services;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import orsk.authmodule.dto.PasswordResetRequest;
+import orsk.authmodule.exceptions.EmailNotFoundException;
+import orsk.authmodule.model.Role;
+import orsk.authmodule.model.User;
+import orsk.authmodule.repository.PasswordResetTokenRepository;
+import orsk.authmodule.repository.RoleRepository;
+import orsk.authmodule.repository.UserRepository;
+import orsk.authmodule.service.AuthService;
+import orsk.authmodule.service.AuditLogService;
+
+import java.util.Optional;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+public class PasswordResetServiceTest {
+
+    @InjectMocks
+    private AuthService authService;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Mock
+    private RoleRepository roleRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private AuditLogService auditLogService;
+
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+        Role userRole = new Role();
+        userRole.setName("ROLE_USER");
+        when(roleRepository.findByName("ROLE_USER")).thenReturn(Optional.of(userRole));
+    }
+
+    @Test
+    @DisplayName("Initiate Password Reset Successfully")
+    public void testInitiatePasswordReset_Success() {
+        PasswordResetRequest request = new PasswordResetRequest();
+        request.setEmail("testuser@example.com");
+
+        User user = new User();
+        user.setUsername("testuser");
+        user.setEmail("testuser@example.com");
+        user.setEnabled(true);
+        user.setRoles(Set.of(roleRepository.findByName("ROLE_USER").get()));
+
+        when(userRepository.findByEmail("testuser@example.com")).thenReturn(Optional.of(user));
+
+        assertDoesNotThrow(() -> authService.initiatePasswordReset(request));
+
+        verify(passwordResetTokenRepository, times(1)).save(any());
+        verify(auditLogService, times(1)).logAction(eq(user), eq("PASSWORD_RESET_INITIATED"), any(), eq("Password reset initiated"));
+    }
+
+    @Test
+    @DisplayName("Initiate Password Reset with Non-Existent Email")
+    public void testInitiatePasswordReset_EmailNotFound() {
+        PasswordResetRequest request = new PasswordResetRequest();
+        request.setEmail("nonexistent@example.com");
+
+        when(userRepository.findByEmail("nonexistent@example.com")).thenReturn(Optional.empty());
+
+        EmailNotFoundException exception = assertThrows(EmailNotFoundException.class, () -> authService.initiatePasswordReset(request));
+        assertEquals("Email not found", exception.getMessage());
+
+        verify(passwordResetTokenRepository, never()).save(any());
+        verify(auditLogService, never()).logAction(any(), any(), any(), any());
+    }
+
+    // Additional password reset tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/services/UserServiceTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/UserServiceTest.java
+package orsk.authmodule.services;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import orsk.authmodule.model.Role;
+import orsk.authmodule.model.User;
+import orsk.authmodule.repository.RoleRepository;
+import orsk.authmodule.repository.UserRepository;
+import orsk.authmodule.service.UserService;
+
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+public class UserServiceTest {
+
+    @InjectMocks
+    private UserService userService;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private RoleRepository roleRepository;
+
+    @Mock
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+        Role userRole = new Role();
+        userRole.setName("ROLE_USER");
+        when(roleRepository.findByName("ROLE_USER")).thenReturn(Optional.of(userRole));
+    }
+
+    @Test
+    @DisplayName("Register New User Successfully")
+    public void testRegisterNewUser_Success() {
+        User user = new User();
+        user.setUsername("newUser");
+        user.setEmail("newuser@example.com");
+        user.setPassword("plainPassword");
+
+        when(userRepository.findByUsername("newUser")).thenReturn(Optional.empty());
+        when(passwordEncoder.encode("plainPassword")).thenReturn("hashedPassword");
+        when(userRepository.save(any(User.class))).thenReturn(user);
+
+        User registeredUser = userService.registerNewUser(user);
+
+        assertNotNull(registeredUser);
+        assertEquals("newUser", registeredUser.getUsername());
+        assertEquals("hashedPassword", registeredUser.getPassword());
+        assertFalse(registeredUser.getEnabled());
+        assertTrue(registeredUser.getRoles().contains(roleRepository.findByName("ROLE_USER").get()));
+
+        verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Register New User with Existing Username")
+    public void testRegisterNewUser_ExistingUsername() {
+        User existingUser = new User();
+        existingUser.setUsername("existingUser");
+        existingUser.setEmail("existing@example.com");
+
+        when(userRepository.findByUsername("existingUser")).thenReturn(Optional.of(existingUser));
+
+        User newUser = new User();
+        newUser.setUsername("existingUser");
+        newUser.setEmail("newuser@example.com");
+        newUser.setPassword("plainPassword");
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> userService.registerNewUser(newUser));
+        assertEquals("Username already exists", exception.getMessage());
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    // Additional user service tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/services/EmailVerificationTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/EmailVerificationTest.java
+package orsk.authmodule.services;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.SpringBootMockMvcBuilderCustomizer;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import orsk.authmodule.dto.RegistrationRequest;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class EmailVerificationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    @DisplayName("Email Verification Successfully")
+    public void testVerifyEmail_Success() throws Exception {
+        // Assume a valid token is generated and available
+        String token = "validVerificationToken";
+
+        mockMvc.perform(post("/api/auth/verify-email")
+                        .param("token", token))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Email verified successfully."));
+    }
+
+    @Test
+    @DisplayName("Email Verification with Invalid Token")
+    public void testVerifyEmail_InvalidToken() throws Exception {
+        String token = "invalidToken";
+
+        mockMvc.perform(post("/api/auth/verify-email")
+                        .param("token", token))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Invalid verification token"));
+    }
+
+    // Additional email verification tests...
+}
+
+
+==============================
+File: /Users/simonbeckmann/IdeaProjects/CyberDashboar/src/mysqlauthmoduleVV2mysql/src/test/java/orsk/authmodule/stress/StressTest.java
+==============================
+// src/test/java/orsk/authmodule/tests/StressTest.java
+package orsk.authmodule.stress;
+
+import io.gatling.javaapi.core.*;
+import io.gatling.javaapi.http.*;
+import org.junit.jupiter.api.Test;
+
+import static io.gatling.javaapi.core.CoreDsl.*;
+import static io.gatling.javaapi.http.HttpDsl.*;
+
+public class StressTest extends Simulation {
+
+    HttpProtocolBuilder httpProtocol = http
+        .baseUrl("http://localhost:8080")
+        .acceptHeader("application/json");
+
+    ScenarioBuilder scn = scenario("Stress Test - Login Endpoint")
+        .exec(
+            http("Login")
+                .post("/api/auth/login")
+                .header("Content-Type", "application/json")
+                .body(StringBody("{\"email\":\"stressuser@example.com\",\"password\":\"StrongPassword@123\"}")).asJson()
+                .check(status().is(200))
+        );
+
+    {
+        setUp(
+            scn.injectOpen(rampUsers(5000).during(300))
+        ).protocols(httpProtocol);
+    }
+}
+
+
